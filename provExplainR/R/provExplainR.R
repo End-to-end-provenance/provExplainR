@@ -24,12 +24,37 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 		return(NA)
 	}
 
-	#detect.changes(olderProv.dir, newerProv.dir)
+	# check for changes
+	detect.changes(olderProv.dir, newerProv.dir)
 }
 
-#detect.changes <- function (olderProv.dir, newerProv.dir){
 
-#}
+detect.changes <- function (olderProv.dir, newerProv.dir){
+	# get ProvInfo object of two directories from provParseR
+	older.json.file <- paste(olderProv.dir, "/prov.json", sep = "")
+	newer.json.file <- paste(newerProv.dir, "/prov.json", sep = "")
+
+	if(!file.exists(older.json.file) || !file.exists(newer.json.file)){
+		stop("prov.json file in the given folders not found")
+	}
+
+	older.prov.info <- provParseR::prov.parse(older.json.file)
+	newer.prov.info <- provParseR::prov.parse(newer.json.file)
+
+	# detect changes in different aspects
+	libraries.changes(provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
+}
+
+libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
+	if(dplyr::setequal(olderProv.lib.df, newerProv.lib.df)){
+		cat("No changes in libraries used")
+		return(NA)
+	}else{
+
+	}
+}
+
+
 
 #' check.dir.existence checks if two given directories exists
 #' @param dir1 the first directory
@@ -46,4 +71,6 @@ check.dir.existence <- function (dir1, dir2){
 	}
 	return(error.message)
 }
+
+# prov.explain("prov_HF-data_2019-06-17T16.20.23EDT", "prov_HF-data")
 
