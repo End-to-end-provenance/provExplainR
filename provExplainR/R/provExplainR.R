@@ -45,16 +45,49 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	libraries.changes(provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
 }
 
+#' libraries.changes detects changes in libraries used based on 
+#' the collected provenances from two provenance folders.
+#' The method prints out 3 main information to compare differences 
+#' between 2 library data frames:
+#' library version updates, added libraries, removed libraries
+#' @param olderProv.lib.df library data frame for older provenance obtained from provParseR
+#' @param newerProv.lib.df library data frame for newer provenance obtained from provParseR
+#' @noRd
 libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
-	if(dplyr::setequal(olderProv.lib.df, newerProv.lib.df)){
-		cat("No changes in libraries used")
-		return(NA)
-	}else{
+	# removes unneccesary id rows
+	olderProv.lib.df <- subset(olderProv.lib.df, select = -id)
+	newerProv.lib.df <- subset(newerProv.lib.df, select = -id)
 
+	cat ("LIBRARY CHANGES:\n")
+	# find library updates
+	same.name.libs.df <- dplyr::inner_join(olderProv.lib.df, newerProv.lib.df, by = "name")
+	lib.updates.df <- same.name.libs.df[same.name.libs.df$version.x != same.name.libs.df$version.y, ]
+	colnames(lib.updates.df) <- c("name", "old.version", "new.version")
+	if (nrow(lib.updates.df) == 0) {
+		cat ("Library updates: NONE\n")
+	}else{
+		cat ("Library updates: \n")
+		print.data.frame(lib.updates.df, row.names = FALSE)
+	}
+
+	# find libraries added
+	added.lib.df <- dplyr::anti_join(newerProv.lib.df, olderProv.lib.df, by = "name")
+	if (nrow(added.lib.df) == 0) {
+		cat ("\nLibraries added: NONE\n")
+	}else{
+		cat ("\nLibraries added: \n")
+		print.data.frame(added.lib.df, row.names = FALSE)
+	}
+
+	#find libraries removed
+	removed.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
+	if (nrow(removed.lib.df) == 0) {
+		cat ("\nLibraries removed: NONE\n")
+	}else{
+		cat ("\nLibraries removed: \n")
+		print.data.frame(removed.lib.df, row.names = FALSE)
 	}
 }
-
-
 
 #' check.dir.existence checks if two given directories exists
 #' @param dir1 the first directory
@@ -71,6 +104,3 @@ check.dir.existence <- function (dir1, dir2){
 	}
 	return(error.message)
 }
-
-# prov.explain("prov_HF-data_2019-06-17T16.20.23EDT", "prov_HF-data")
-
