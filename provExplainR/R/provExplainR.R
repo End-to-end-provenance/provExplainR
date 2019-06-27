@@ -28,7 +28,11 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 	detect.changes(olderProv.dir, newerProv.dir)
 }
 
-
+#' detect.changes gets ProvInfo objects from provParseR
+#' and calls other methods to find changes in different aspects
+#' @param olderProv.dir path to directory that contains older provenance
+#' @param newerProv.dir path to directory that contains newer provenance
+#' @noRd
 detect.changes <- function (olderProv.dir, newerProv.dir){
 	# get ProvInfo object of two directories from provParseR
 	older.json.file <- paste(olderProv.dir, "/prov.json", sep = "")
@@ -42,6 +46,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	newer.prov.info <- provParseR::prov.parse(newer.json.file)
 
 	# detect changes in different aspects
+	environment.changes(provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
 	libraries.changes(provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
 }
 
@@ -58,9 +63,11 @@ libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	olderProv.lib.df <- subset(olderProv.lib.df, select = -id)
 	newerProv.lib.df <- subset(newerProv.lib.df, select = -id)
 
-	cat ("LIBRARY CHANGES:\n")
+	cat ("\nLIBRARY CHANGES:\n")
 	# find library updates
+	# join two data frames by "name"
 	same.name.libs.df <- dplyr::inner_join(olderProv.lib.df, newerProv.lib.df, by = "name")
+	# detect the differences in corresponding values of each lib name
 	lib.updates.df <- same.name.libs.df[same.name.libs.df$version.x != same.name.libs.df$version.y, ]
 	colnames(lib.updates.df) <- c("name", "old.version", "new.version")
 	if (nrow(lib.updates.df) == 0) {
@@ -71,6 +78,7 @@ libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	}
 
 	# find libraries added
+	# get rows in 2nd df but not in 1st df
 	added.lib.df <- dplyr::anti_join(newerProv.lib.df, olderProv.lib.df, by = "name")
 	if (nrow(added.lib.df) == 0) {
 		cat ("\nLibraries added: NONE\n")
@@ -79,13 +87,52 @@ libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
 		print.data.frame(added.lib.df, row.names = FALSE)
 	}
 
-	#find libraries removed
+	# find libraries removed
+	# get rows in 1st df but not in 2nd df
 	removed.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
 	if (nrow(removed.lib.df) == 0) {
 		cat ("\nLibraries removed: NONE\n")
 	}else{
 		cat ("\nLibraries removed: \n")
 		print.data.frame(removed.lib.df, row.names = FALSE)
+	}
+}
+
+#' environment.changes detects changes in the environments in which 
+#' the provenances were collected
+#' The method prints out 3 main information to compare differences 
+#' between 2 environment data frames:
+#' environment value changes, any new collected environment factors and
+#' any removed environment factors by provenance collector tool
+#' @param olderProv.lib.df environment data frame for older provenance obtained from provParseR
+#' @param newerProv.lib.df environment data frame for newer provenance obtained from provParseR
+#' @noRd
+environment.changes <- function (olderProv.env.df, newerProv.env.df) {
+	cat ("ENVIRONMENT CHANGES:\n")
+	# find environment changes
+	# join two data frames by "label"
+	same.label.env.df <- dplyr::inner_join(olderProv.env.df, newerProv.env.df, by = "label")
+	env.changes.df <- same.label.env.df[same.label.env.df$value.x != same.label.env.df$value.y, ]
+	colnames(env.changes.df) <- c("name", "old.env.value", "new.env.value")
+	if (nrow(env.changes.df) == 0){
+		cat ("Environment value changes: NONE")
+	}else{
+		cat ("Environment value changes: \n")
+		print.data.frame(env.changes.df, row.names = FALSE)
+	}
+
+	# find possible added environment factor from the newer version
+	added.env.df <- dplyr::anti_join(newerProv.env.df, olderProv.env.df, by = "label")
+	if (nrow(added.env.df) != 0){
+		cat ("\nEnvironment factors added: \n")
+		print.data.frame(added.env.df, row.names = FALSE)
+	}
+
+	# find possible removed environment factor from the older version
+	removed.env.df <- dplyr::anti_join(olderProv.env.df, newerProv.env.df, by = "label")
+	if (nrow(removed.env.df) != 0){
+		cat ("\nEnvironment factors removed: \n")
+		print.data.frame(removed.env.df, row.names = FALSE)
 	}
 }
 
