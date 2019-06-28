@@ -39,7 +39,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	newer.json.file <- paste(newerProv.dir, "/prov.json", sep = "")
 
 	if(!file.exists(older.json.file) || !file.exists(newer.json.file)){
-		stop("prov.json file in the given folders not found")
+		stop("prov.json file in the given folders not found\n")
 	}
 
 	older.prov.info <- provParseR::prov.parse(older.json.file)
@@ -59,11 +59,15 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 #' @param newerProv.lib.df library data frame for newer provenance obtained from provParseR
 #' @noRd
 libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
+	cat ("\nLIBRARY CHANGES:\n")
+	if (check.df.existence("Library", olderProv.lib.df, newerProv.lib.df) == FALSE) {
+		return(NULL)
+	}
+
 	# removes unneccesary id rows
 	olderProv.lib.df <- subset(olderProv.lib.df, select = -id)
 	newerProv.lib.df <- subset(newerProv.lib.df, select = -id)
 
-	cat ("\nLIBRARY CHANGES:\n")
 	# find library updates
 	# join two data frames by "name"
 	same.name.libs.df <- dplyr::inner_join(olderProv.lib.df, newerProv.lib.df, by = "name")
@@ -108,7 +112,11 @@ libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
 #' @param newerProv.lib.df environment data frame for newer provenance obtained from provParseR
 #' @noRd
 environment.changes <- function (olderProv.env.df, newerProv.env.df) {
-	cat ("ENVIRONMENT CHANGES:\n")
+	cat ("\nENVIRONMENT CHANGES:\n")
+	if (check.df.existence("Environment", olderProv.env.df, newerProv.env.df) == FALSE){
+		return(NULL)
+	}
+
 	# find environment changes
 	# join two data frames by "label"
 	same.label.env.df <- dplyr::inner_join(olderProv.env.df, newerProv.env.df, by = "label")
@@ -136,6 +144,28 @@ environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 	}
 }
 
+prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
+	cat ("\nPROVENANCE TOOL CHANGES: \n")
+	if (check.df.existence("Provenance tool", olderProv.tool.df, newerProv.tool.df) == FALSE){
+		return (NULL)
+	}
+
+	same.tool.df <- dplyr::inner_join(olderProv.tool.df, newerProv.tool.df, by = "tool.name")
+	colnames(same.tool.df) <- c("tool.name", "old.tool.version", "old.json.version", 
+		"new.tool.version", "new.json.version")
+	if (same.tool.df$old.tool.version != same.tool.df$new.tool.version
+		|| same.tool.df$old.json.version != same.tool.df$old.json.version){
+		print.data.frame(same.tool.df, row.names = FALSE)
+	}
+
+	# if newer provenance version is collected by additional tools, show the new tool
+	added.tool.df <- dplyr::anti_join(newerProv.tool.df, olderProv.tool.df, by = "tool.name")
+	if (nrow(added.tool.df) != 0){
+		cat ("\nNew tool used to collect provenance: \n")
+		print.data.frame(added.tool.df, row.names = FALSE)
+	}
+}
+
 #' check.dir.existence checks if two given directories exists
 #' @param dir1 the first directory
 #' @param dir2 the second directory
@@ -150,4 +180,11 @@ check.dir.existence <- function (dir1, dir2){
 		error.message <- paste(error.message, dir2, " directory not found\n", sep = "")
 	}
 	return(error.message)
+}
+
+check.df.existence <- function (aspect, df1, df2){
+	if(is.null(df1) || is.null(df2)){
+		warning (paste(aspect, "data frames returned by provParseR is null\n"))
+		return (FALSE)
+	}
 }
