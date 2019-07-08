@@ -12,20 +12,17 @@
 #' @export
 #' @rdname explain
 prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
-	# case: directories do not exist
-	error.message <- check.dir.existence(olderProv.dir, newerProv.dir)
-	if(error.message != ""){
-		stop(error.message)
-	}
+	# check the existence of two given directories
+	check.dir.existence (olderProv.dir, newerProv.dir)
 
 	# case: two directories are the same
-	if(olderProv.dir == newerProv.dir){
-		cat(olderProv.dir, "and", newerProv.dir, "are the same directories\n")
-		return(NA)
+	if (olderProv.dir == newerProv.dir){
+		cat (olderProv.dir, "and", newerProv.dir, "are the same directories\n")
+		return (NA)
 	}
 
 	# check for changes
-	detect.changes(olderProv.dir, newerProv.dir)
+	detect.changes (olderProv.dir, newerProv.dir)
 }
 
 #' detect.changes gets ProvInfo objects from provParseR
@@ -34,26 +31,17 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 #' @param newerProv.dir path to directory that contains newer provenance
 #' @noRd
 detect.changes <- function (olderProv.dir, newerProv.dir){
-	# gets the path of two json files
-	older.json.file <- paste(olderProv.dir, "/prov.json", sep = "")
-	newer.json.file <- paste(newerProv.dir, "/prov.json", sep = "")
-
-	# case: json file(s) do(es) not exist
-	if(!file.exists(older.json.file) || !file.exists(newer.json.file)){
-		stop("prov.json file in the given folders not found\n")
-	}
-
-	# gets the ProvInfo object returned by provParseR
-	older.prov.info <- provParseR::prov.parse(older.json.file)
-	newer.prov.info <- provParseR::prov.parse(newer.json.file)
+	# gets the ProvInfo objects
+	older.prov.info <- get.prov.info.object(olderProv.dir)
+	newer.prov.info <- get.prov.info.object(newerProv.dir)
 
 	# detect changes in different aspects
-	environment.changes(provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
-	libraries.changes(provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
-	prov.tool.changes(provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
+	environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
+	print.library.changes (provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
+	prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
 }
 
-#' libraries.changes detects changes in libraries used based on 
+#' print.library.changes detects changes in libraries used based on 
 #' the collected provenances from two provenance folders.
 #' The method prints out 3 main information to compare differences 
 #' between 2 library data frames:
@@ -61,10 +49,41 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 #' @param olderProv.lib.df library data frame for older provenance
 #' @param newerProv.lib.df library data frame for newer provenance
 #' @noRd
-libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
-	cat ("\nLIBRARY CHANGES:\n")
+print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
+	# get the list of changes
+	lib.change.list <- find.library.changes(olderProv.lib.df, newerProv.lib.df)
+	lib.updates <- lib.change.list[1]
+	lib.add <- lib.change.list[2]
+	lib.remove <- lib.change.list[3]
 
-	# case: input data frame(s) do(es) not exist
+	# print out the result
+	cat ("LIBRARY CHANGES:\n")
+
+	if (nrow(lib.updates) == 0) {
+		cat ("Library updates: NONE\n")
+	}else {
+		cat ("Library updates: \n")
+		print.data.frame(lib.updates, row.names = FALSE)
+	}
+
+	if (nrow(lib.add) == 0) {
+		cat ("\nLibraries added: NONE\n")
+	}else {
+		cat ("\nLibraries added: \n")
+		print.data.frame(lib.add, row.names = FALSE)
+	}
+
+	
+	if (nrow(lib.remove) == 0) {
+		cat ("\nLibraries removed: NONE\n")
+	}else {
+		cat ("\nLibraries removed: \n")
+		print.data.frame(lib.remove, row.names = FALSE)
+	}
+}
+
+find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
+	# case: input data frame(s) do(es) not exist, stop the function immediately
 	if (check.df.existence("Library", olderProv.lib.df, newerProv.lib.df) == FALSE) {
 		return(NULL)
 	}
@@ -81,32 +100,16 @@ libraries.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	lib.updates.df <- same.name.libs.df[same.name.libs.df$version.x != same.name.libs.df$version.y, ]
 	# rename the columns for easier reading 
 	colnames(lib.updates.df) <- c("name", "old.version", "new.version")
-	if (nrow(lib.updates.df) == 0) {
-		cat ("Library updates: NONE\n")
-	}else{
-		cat ("Library updates: \n")
-		print.data.frame(lib.updates.df, row.names = FALSE)
-	}
 
 	# find libraries added
 	# get rows in 2nd df but not in 1st df
 	added.lib.df <- dplyr::anti_join(newerProv.lib.df, olderProv.lib.df, by = "name")
-	if (nrow(added.lib.df) == 0) {
-		cat ("\nLibraries added: NONE\n")
-	}else{
-		cat ("\nLibraries added: \n")
-		print.data.frame(added.lib.df, row.names = FALSE)
-	}
 
 	# find libraries removed
 	# get rows in 1st df but not in 2nd df
 	removed.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
-	if (nrow(removed.lib.df) == 0) {
-		cat ("\nLibraries removed: NONE\n")
-	}else{
-		cat ("\nLibraries removed: \n")
-		print.data.frame(removed.lib.df, row.names = FALSE)
-	}
+
+	return (list(lib.updates.df, added.lib.df, removed.lib.df))
 }
 
 #' environment.changes detects changes in the environments in which 
@@ -192,11 +195,11 @@ prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 }
 
 #' check.dir.existence checks if two given directories exists
-#' and returns the error message to the caller
+#' and stops the program when the directories are non-existent
 #' @param dir1 the first directory
 #' @param dir2 the second directory
 #' @noRd
-check.dir.existence <- function (dir1, dir2){
+check.dir.existence <- function (dir1, dir2) {
 	error.message <- ""
 	if (!dir.exists(dir1)) {
 		error.message <- paste(dir1, "directory not found\n")
@@ -205,7 +208,29 @@ check.dir.existence <- function (dir1, dir2){
 	if (!dir.exists(dir2)) {
 		error.message <- paste(error.message, dir2, " directory not found\n", sep = "")
 	}
+
+	if (error.message != "") {
+		stop(error.message)
+	}
 	return(error.message)
+}
+
+#' get.prov.info.object accesses the JSON file from the given directory,
+#' and returns a ProvInfo object from provParseR
+#' @param directory the provenance directory
+#' @return ProvInfo object
+#' @noRd
+get.prov.info.object <- function (directory) {
+	# gets the path of two json files
+	json.file <- paste(directory, "/prov.json", sep = "")
+
+	# case: json file does not exist
+	if(!file.exists(json.file)){
+		stop(paste("prov.json file in the", directory, "not found\n"))
+	}
+
+	# returns the ProvInfo object returned by provParseR
+	return(provParseR::prov.parse(json.file))
 }
 
 #' check.df.existence checks if two given data frames are not null. 
