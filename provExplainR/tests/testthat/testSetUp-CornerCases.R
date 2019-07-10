@@ -1,11 +1,14 @@
-library(provExplainR)
-library(testthat)
-
-context("Corner cases: directories, json files")
+#' this test file tests behavior of helper functions that handle corner
+#' cases in provExplainR.R, which includes checking the existence of 
+#' directories, data frames, getting ProvInfo object from provParseR, etc.
+#' @author Khanh Ngo
+#' @version 7/9/19
+#' 
+context("Corner cases: directories, json files, data frames")
 
 # provenance directory paths for testing
-old.prov.dir <- system.file("testdata", "prov_HF-data", package = "provExplainR")
-new.prov.dir <- system.file("testdata", "prov_HF-data_2019-06-10T15.32.25EDT", package = "provExplainR")
+old.prov.dir <- system.file("testdata", "prov_HF-data_2019-06-10T15.32.25EDT", package = "provExplainR")
+new.prov.dir <- system.file("testdata", "prov_HF-data", package = "provExplainR")
 
 
 ########## test checking existence of two directories ##########
@@ -42,9 +45,15 @@ test_that("warning is shown for non-existent data frames", {
 	first.df <- data.frame(row1 = c(1,2,3), row2 = c("a", "b", "c"))
 	second.df <- data.frame(row1 = c(4,5,6), row2 = c("d", "e", "f"))
 
-	expect_warning(return.value <- check.df.existence(aspect = "Environment", df1 = NULL, df2 = first.df), 
+	expect_warning(return.value1 <- check.df.existence(aspect = "Environment", df1 = NULL, df2 = first.df), 
 		regexp = paste("Environment data frames returned by provParseR is null\n"))
-	expect_false(return.value)
+	expect_false(return.value1)
+	expect_warning(return.value2 <- check.df.existence(aspect = "Environment", df1 = NULL, df2 = NULL), 
+		regexp = paste("Environment data frames returned by provParseR is null\n"))
+	expect_false(return.value2)
+	expect_warning(return.value3 <- check.df.existence(aspect = "Environment", df1 = second.df, df2 = NULL), 
+		regexp = paste("Environment data frames returned by provParseR is null\n"))
+	expect_false(return.value3)
 	expect_true(check.df.existence(aspect = "Environment", df1 = first.df, df2 = second.df))
 })
 

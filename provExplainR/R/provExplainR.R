@@ -1,6 +1,6 @@
-# Immplementation of provExplainR: detect changes and report to users
-# @author: Khanh Ngo
-# @date: 06/24/19
+#' Immplementation of provExplainR: detect changes and report to users
+#' @author Khanh Ngo
+#' @version 06/24/19
 
 #' provExplainR takes in two provenance directories, detect changes, and
 #' report to users. Set 'save' parameter to be true to have the results
@@ -41,47 +41,39 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
 }
 
-#' print.library.changes detects changes in libraries used based on 
-#' the collected provenances from two provenance folders.
-#' The method prints out 3 main information to compare differences 
-#' between 2 library data frames:
-#' library version updates, added libraries, removed libraries
+#' print.library.changes gets changes on library by calling a helper
+#' method find.library.changes, and prints out the result
 #' @param olderProv.lib.df library data frame for older provenance
 #' @param newerProv.lib.df library data frame for newer provenance
 #' @noRd
 print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	# get the list of changes
 	lib.change.list <- find.library.changes(olderProv.lib.df, newerProv.lib.df)
-	lib.updates <- lib.change.list[1]
-	lib.add <- lib.change.list[2]
-	lib.remove <- lib.change.list[3]
+	lib.updates <- as.data.frame(lib.change.list[1])
+	lib.add <- as.data.frame(lib.change.list[2])
+	lib.remove <- as.data.frame(lib.change.list[3])
 
 	# print out the result
-	cat ("LIBRARY CHANGES:\n")
+	cat ("\n\nLIBRARY CHANGES:\n")
 
-	if (nrow(lib.updates) == 0) {
-		cat ("Library updates: NONE\n")
-	}else {
-		cat ("Library updates: \n")
-		print.data.frame(lib.updates, row.names = FALSE)
-	}
+	cat ("Library updates: ")
+	print.custom.df(lib.updates)
 
-	if (nrow(lib.add) == 0) {
-		cat ("\nLibraries added: NONE\n")
-	}else {
-		cat ("\nLibraries added: \n")
-		print.data.frame(lib.add, row.names = FALSE)
-	}
+	cat ("\nLibraries added: ")
+	print.custom.df(lib.add)
 
-	
-	if (nrow(lib.remove) == 0) {
-		cat ("\nLibraries removed: NONE\n")
-	}else {
-		cat ("\nLibraries removed: \n")
-		print.data.frame(lib.remove, row.names = FALSE)
-	}
+	cat ("\nLibraries removed: ")
+	print.custom.df(lib.remove)
 }
 
+
+#' find.library.changes detects changes in libraries used based on the 
+#' collected provenance from two provenance folders.
+#' The method returns a list of 3 data frames: library version updates,
+#' added libraries, removed libraries
+#' @param olderProv.lib.df library data frame for older provenance
+#' @param newerProv.lib.df library data frame for newer provenance
+#' @noRd
 find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 	# case: input data frame(s) do(es) not exist, stop the function immediately
 	if (check.df.existence("Library", olderProv.lib.df, newerProv.lib.df) == FALSE) {
@@ -110,6 +102,15 @@ find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 	removed.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
 
 	return (list(lib.updates.df, added.lib.df, removed.lib.df))
+}
+
+print.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
+	if(nrow(specific.data.frame) == 0){
+		cat ("NONE\n")
+	}else{
+		cat ("\n")
+		print.data.frame(specific.data.frame, row.names = has.row.names)
+	}
 }
 
 #' environment.changes detects changes in the environments in which 
