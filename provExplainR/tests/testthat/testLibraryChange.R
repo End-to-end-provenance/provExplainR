@@ -3,23 +3,27 @@
 #' @author Khanh Ngo
 #' @version 7/9/19
 
-library(testthat)
 library(provExplainR)
+library(testthat)
 
 context("Finding Library Changes")
 
-# provenance directory paths for testing
-old.prov.dir <- system.file("testdata", "prov_HF-data_2019-06-10T15.32.25EDT", package = "provExplainR")
-new.prov.dir <- system.file("testdata", "prov_HF-data", package = "provExplainR")
+source("initTest.R")
 
 # ProvInfo objects
-old.prov.info <- provParseR::prov.parse(paste(old.prov.dir, "/prov.json", sep = ""))
-new.prov.info <- provParseR::prov.parse(paste(new.prov.dir, "/prov.json", sep = ""))
+old.prov.info <- get.test.prov.info ("prov_HF-data_2019-06-10T15.32.25EDT")
+new.prov.info <- get.test.prov.info ("prov_HF-data")
 
 # library data frames for each provenance
 old.libs.df <- provParseR::get.libs(old.prov.info)
 new.libs.df <- provParseR::get.libs(new.prov.info)
 
+test_that("test init is fine", {
+	expect_false(is.null(old.libs.df))
+	expect_false(is.null(new.libs.df))
+	expect_true(is.data.frame(old.libs.df))
+	expect_true(is.data.frame(new.libs.df))
+})
 
 test_that("correctly outputs 3 library data frames: updates, additions, removals", {
 	# get the actual returned list
@@ -42,3 +46,18 @@ test_that("correctly outputs 3 library data frames: updates, additions, removals
 	expect_equivalent(actual.lib.add.df, expected.lib.add.df)
 	expect_equivalent(actual.lib.remove.df, expected.lib.remove.df)
 })
+
+test_that("warning message is shown when library data frame is NULL", {
+	expect_warning(escape.value1 <- find.library.changes(olderProv.lib.df = NULL, newerProv.lib.df = new.libs.df), 
+		regexp = paste("Library data frames returned by provParseR is NULL\n"))
+	expect_equal(escape.value1, NULL)
+
+	expect_warning(escape.value2 <- find.library.changes(olderProv.lib.df = NULL, newerProv.lib.df = NULL), 
+		regexp = paste("Library data frames returned by provParseR is NULL\n"))
+	expect_equal(escape.value2, NULL)
+
+	expect_warning(escape.value <- find.library.changes(olderProv.lib.df = old.libs.df, newerProv.lib.df = NULL), 
+		regexp = paste("Library data frames returned by provParseR is NULL\n"))
+	expect_equal(escape.value, NULL)
+})
+

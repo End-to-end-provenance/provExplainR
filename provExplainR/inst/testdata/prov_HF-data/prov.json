@@ -1,0 +1,1444 @@
+{
+	"prefix": {
+		"prov": "http://www.w3.org/ns/prov#",
+		"rdt": "https://github.com/End-to-end-provenance/ExtendedProvJson/blob/master/JSON-format.md"
+	},
+
+	"agent" : {
+		"rdt:a1": {
+			"rdt:tool.name": "rdtLite",
+			"rdt:tool.version": "1.1.0",
+			"rdt:json.version": "2.2"
+		}
+	},
+
+	"activity" : {
+		"rdt:p1": {
+			"rdt:name": "HF-data.R",
+			"rdt:type": "Start",
+			"rdt:elapsedTime": "0.383",
+			"rdt:scriptNum": "NA",
+			"rdt:startLine": "NA",
+			"rdt:startCol": "NA",
+			"rdt:endLine": "NA",
+			"rdt:endCol": "NA"
+		},
+		"rdt:p2": {
+			"rdt:name": "raw.file <- readLines(\"http://harvardforest.fas.harvard.edu/",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.283",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 9,
+			"rdt:startCol": 1,
+			"rdt:endLine": 9,
+			"rdt:endCol": 136
+		},
+		"rdt:p3": {
+			"rdt:name": "hourly.vector <- vector()",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.174",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 10,
+			"rdt:startCol": 1,
+			"rdt:endLine": 10,
+			"rdt:endCol": 25
+		},
+		"rdt:p4": {
+			"rdt:name": "daily.vector <- vector()",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 11,
+			"rdt:startCol": 1,
+			"rdt:endLine": 11,
+			"rdt:endCol": 24
+		},
+		"rdt:p5": {
+			"rdt:name": "for (i in 1:length(raw.file)) {\tif (substring(raw.file[i]",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "1.83",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 13,
+			"rdt:startCol": 1,
+			"rdt:endLine": 18,
+			"rdt:endCol": 1
+		},
+		"rdt:p6": {
+			"rdt:name": "hourly.file <- file(\"hourly.csv\")",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.074",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 20,
+			"rdt:startCol": 1,
+			"rdt:endLine": 20,
+			"rdt:endCol": 33
+		},
+		"rdt:p7": {
+			"rdt:name": "daily.file <- file(\"daily.csv\")",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.08",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 21,
+			"rdt:startCol": 1,
+			"rdt:endLine": 21,
+			"rdt:endCol": 31
+		},
+		"rdt:p8": {
+			"rdt:name": "writeLines(hourly.vector, con = hourly.file)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.08",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 23,
+			"rdt:startCol": 1,
+			"rdt:endLine": 23,
+			"rdt:endCol": 44
+		},
+		"rdt:p9": {
+			"rdt:name": "writeLines(daily.vector, con = daily.file)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 24,
+			"rdt:startCol": 1,
+			"rdt:endLine": 24,
+			"rdt:endCol": 42
+		},
+		"rdt:p10": {
+			"rdt:name": "close(hourly.file)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.14",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 26,
+			"rdt:startCol": 1,
+			"rdt:endLine": 26,
+			"rdt:endCol": 18
+		},
+		"rdt:p11": {
+			"rdt:name": "close(daily.file)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.185",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 27,
+			"rdt:startCol": 1,
+			"rdt:endLine": 27,
+			"rdt:endCol": 17
+		},
+		"rdt:p12": {
+			"rdt:name": "hourly.df <- read.csv(\"hourly.csv\", header = FALSE)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.591",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 29,
+			"rdt:startCol": 1,
+			"rdt:endLine": 29,
+			"rdt:endCol": 51
+		},
+		"rdt:p13": {
+			"rdt:name": "daily.df <- read.csv(\"daily.csv\", header = FALSE)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.596",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 30,
+			"rdt:startCol": 1,
+			"rdt:endLine": 30,
+			"rdt:endCol": 49
+		},
+		"rdt:p14": {
+			"rdt:name": "print(\"testing\")",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.01",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 34,
+			"rdt:startCol": 1,
+			"rdt:endLine": 34,
+			"rdt:endCol": 16
+		},
+		"rdt:p15": {
+			"rdt:name": "colnames(hourly.df) <- c(\"type\", \"year\", \"JulDate\", \"time\", ",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.004",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 37,
+			"rdt:startCol": 1,
+			"rdt:endLine": 41,
+			"rdt:endCol": 70
+		},
+		"rdt:p16": {
+			"rdt:name": "rain.df <- hourly.df[hourly.df$precipitation > 0, ]",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.015",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 44,
+			"rdt:startCol": 1,
+			"rdt:endLine": 44,
+			"rdt:endCol": 51
+		},
+		"rdt:p17": {
+			"rdt:name": "temp.df <- hourly.df[hourly.df$airTemp < hourly.df$soilTemp,",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.011",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 47,
+			"rdt:startCol": 1,
+			"rdt:endLine": 47,
+			"rdt:endCol": 62
+		},
+		"rdt:p18": {
+			"rdt:name": "rain.temp.df <- rain.df[rain.df$airTemp < rain.df$soilTemp, ",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.012",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 50,
+			"rdt:startCol": 1,
+			"rdt:endLine": 50,
+			"rdt:endCol": 61
+		},
+		"rdt:p19": {
+			"rdt:name": "selected.columns.df <- hourly.df[, c(\"JulDate\", \"time\", \"air",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.011",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 53,
+			"rdt:startCol": 1,
+			"rdt:endLine": 53,
+			"rdt:endCol": 97
+		},
+		"rdt:p20": {
+			"rdt:name": "filtered.selected.columns.df <- rain.temp.df[, c(\"JulDate\", ",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 56,
+			"rdt:startCol": 1,
+			"rdt:endLine": 56,
+			"rdt:endCol": 109
+		},
+		"rdt:p21": {
+			"rdt:name": "five.highest.wind <- hourly.df[order(hourly.df$windSpeed, de",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.013",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 59,
+			"rdt:startCol": 1,
+			"rdt:endLine": 59,
+			"rdt:endCol": 79
+		},
+		"rdt:p22": {
+			"rdt:name": "five.highest.wind <- five.highest.wind[1:5, ]",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.011",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 60,
+			"rdt:startCol": 1,
+			"rdt:endLine": 60,
+			"rdt:endCol": 45
+		},
+		"rdt:p23": {
+			"rdt:name": "feature.highest.wind.df <- five.highest.wind[, c(\"JulDate\", ",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.01",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 63,
+			"rdt:startCol": 1,
+			"rdt:endLine": 63,
+			"rdt:endCol": 110
+		},
+		"rdt:p24": {
+			"rdt:name": "hourly.df$hasRain <- hourly.df$precipitation > 0",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 66,
+			"rdt:startCol": 1,
+			"rdt:endLine": 66,
+			"rdt:endCol": 48
+		},
+		"rdt:p25": {
+			"rdt:name": "highest.temp.Jul.date <- function(jul.date) {\tspecific.ju",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 69,
+			"rdt:startCol": 1,
+			"rdt:endLine": 72,
+			"rdt:endCol": 1
+		},
+		"rdt:p26": {
+			"rdt:name": "print(highest.temp.Jul.date(121))",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.006",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 74,
+			"rdt:startCol": 1,
+			"rdt:endLine": 74,
+			"rdt:endCol": 33
+		},
+		"rdt:p27": {
+			"rdt:name": "min.Jul.date <- min(hourly.df$JulDate)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.012",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 77,
+			"rdt:startCol": 1,
+			"rdt:endLine": 77,
+			"rdt:endCol": 38
+		},
+		"rdt:p28": {
+			"rdt:name": "max.Jul.date <- max(hourly.df$JulDate)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 78,
+			"rdt:startCol": 1,
+			"rdt:endLine": 78,
+			"rdt:endCol": 38
+		},
+		"rdt:p29": {
+			"rdt:name": "Jul.range.vector <- c(min.Jul.date:max.Jul.date)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.016",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 81,
+			"rdt:startCol": 1,
+			"rdt:endLine": 81,
+			"rdt:endCol": 49
+		},
+		"rdt:p30": {
+			"rdt:name": "high.temp.each.day.vector <- sapply(Jul.range.vector, highes",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.198",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 84,
+			"rdt:startCol": 1,
+			"rdt:endLine": 84,
+			"rdt:endCol": 76
+		},
+		"rdt:p31": {
+			"rdt:name": "high.temp.days.df <- data.frame(Jul.range.vector, high.temp.",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 85,
+			"rdt:startCol": 1,
+			"rdt:endLine": 85,
+			"rdt:endCol": 76
+		},
+		"rdt:p32": {
+			"rdt:name": "colnames(high.temp.days.df) <- c(\"Day\", \"Temp\")",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 86,
+			"rdt:startCol": 1,
+			"rdt:endLine": 86,
+			"rdt:endCol": 47
+		},
+		"rdt:p33": {
+			"rdt:name": "total.rain.specific.day <- function(jul.date) {\ttemp.date",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 89,
+			"rdt:startCol": 1,
+			"rdt:endLine": 92,
+			"rdt:endCol": 1
+		},
+		"rdt:p34": {
+			"rdt:name": "total.rain.each.day.vector <- sapply(Jul.range.vector, total",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.128",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 94,
+			"rdt:startCol": 1,
+			"rdt:endLine": 94,
+			"rdt:endCol": 79
+		},
+		"rdt:p35": {
+			"rdt:name": "total.rain.days.df <- data.frame(Jul.range.vector, total.rai",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 95,
+			"rdt:startCol": 1,
+			"rdt:endLine": 95,
+			"rdt:endCol": 78
+		},
+		"rdt:p36": {
+			"rdt:name": "colnames(total.rain.days.df) <- c(\"Day\", \"TotalRain\")",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.008",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 96,
+			"rdt:startCol": 1,
+			"rdt:endLine": 96,
+			"rdt:endCol": 53
+		},
+		"rdt:p37": {
+			"rdt:name": "summary(total.rain.days.df$TotalRain > 0)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 99,
+			"rdt:startCol": 1,
+			"rdt:endLine": 99,
+			"rdt:endCol": 41
+		},
+		"rdt:p38": {
+			"rdt:name": "plot(high.temp.days.df$Day, high.temp.days.df$Temp)",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.063",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 102,
+			"rdt:startCol": 1,
+			"rdt:endLine": 102,
+			"rdt:endCol": 51
+		},
+		"rdt:p39": {
+			"rdt:name": "abline(lsfit(high.temp.days.df$Day, high.temp.days.df$Temp),",
+			"rdt:type": "Operation",
+			"rdt:elapsedTime": "0.009",
+			"rdt:scriptNum": 1,
+			"rdt:startLine": 105,
+			"rdt:startCol": 1,
+			"rdt:endLine": 105,
+			"rdt:endCol": 73
+		},
+		"rdt:p40": {
+			"rdt:name": "HF-data.R",
+			"rdt:type": "Finish",
+			"rdt:elapsedTime": "0.012",
+			"rdt:scriptNum": "NA",
+			"rdt:startLine": "NA",
+			"rdt:startCol": "NA",
+			"rdt:endLine": "NA",
+			"rdt:endCol": "NA"
+		}
+	},
+
+	"entity" : {
+		"rdt:d1": {
+			"rdt:name": "http://harvardforest.fas.harvard.edu/sites/harvardforest.fas.harvard.edu/files/weather/metsta.dat",
+			"rdt:value": "data/1-metsta.dat",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"character\"]}",
+			"rdt:type": "URL",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "2019-06-28T10.17.19EDT",
+			"rdt:location": ""
+		},
+		"rdt:d2": {
+			"rdt:name": "raw.file",
+			"rdt:value": "\"101,2019,1,15,.894,99.5,.819,.508,0,.133,-2.835,1011,2.606,2.352,150.1,25.32,6....",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[17256], \"type\":[\"character\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d3": {
+			"rdt:name": "hourly.vector",
+			"rdt:value": "logical(0)",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[0], \"type\":[\"logical\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d4": {
+			"rdt:name": "daily.vector",
+			"rdt:value": "logical(0)",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[0], \"type\":[\"logical\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d5": {
+			"rdt:name": "hourly.vector",
+			"rdt:value": "\"101,2019,1,15,.894,99.5,.819,.508,0,.133,-2.835,1011,2.606,2.352,150.1,25.32,6....",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[17078], \"type\":[\"character\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d6": {
+			"rdt:name": "daily.vector",
+			"rdt:value": "\"102,2019,1,2400,.264,4.18,-3.618,72.9,80.1,64.99,-4.035,-.105,-7.41,0,.13944,44...",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[178], \"type\":[\"character\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d7": {
+			"rdt:name": "hourly.file",
+			"rdt:value": "hourly.csv",
+			"rdt:valType": "file",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d8": {
+			"rdt:name": "daily.file",
+			"rdt:value": "daily.csv",
+			"rdt:valType": "file",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d9": {
+			"rdt:name": "hourly.csv",
+			"rdt:value": "data/9-hourly.csv",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"character\"]}",
+			"rdt:type": "File",
+			"rdt:scope": "undefined",
+			"rdt:fromEnv": false,
+			"rdt:hash": "adb2f232ff35b404c739958ec9ae403e",
+			"rdt:timestamp": "2019-06-28T10.17.22EDT",
+			"rdt:location": "/Users/khanhl.ngo/HarvardForest/Day3Exercise/hourly.csv"
+		},
+		"rdt:d10": {
+			"rdt:name": "daily.csv",
+			"rdt:value": "data/10-daily.csv",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"character\"]}",
+			"rdt:type": "File",
+			"rdt:scope": "undefined",
+			"rdt:fromEnv": false,
+			"rdt:hash": "3801fbd540f2d353d761a1434c416a4a",
+			"rdt:timestamp": "2019-06-28T10.17.22EDT",
+			"rdt:location": "/Users/khanhl.ngo/HarvardForest/Day3Exercise/daily.csv"
+		},
+		"rdt:d11": {
+			"rdt:name": "hourly.df",
+			"rdt:value": "Row 1 101 2019  1 15 0.894 99.5 0.819 0.508  0 0.133 -2.835 1011 2.606 2.352 150...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[17078,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d12": {
+			"rdt:name": "daily.df",
+			"rdt:value": "Row 1 102 2019  1 2400 0.264 4.18 -3.618 72.9 80.1 64.99 -4.035 -0.105 -7.41   0...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[178,28], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"integer\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d13": {
+			"rdt:name": "hourly.df",
+			"rdt:value": "Row 1  101 2019\t   1   15   0.894\t 99.5\t0.819\t\t 0.508\t  0  0.1...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[17078,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d14": {
+			"rdt:name": "rain.df",
+			"rdt:value": "Row 1  101 2019\t   1   15   0.894\t 99.5\t0.819\t\t 0.508\t  0  0.1...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[1174,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d15": {
+			"rdt:name": "temp.df",
+			"rdt:value": "Row 1  101 2019\t   1   15   0.894\t 99.5\t0.819\t\t 0.508\t  0  0.1...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[11389,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d16": {
+			"rdt:name": "rain.temp.df",
+			"rdt:value": "Row 1  101 2019\t   1   15   0.894\t 99.5\t0.819\t\t 0.508\t  0  0.1...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[820,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d17": {
+			"rdt:name": "selected.columns.df",
+			"rdt:value": "Row 1\t   1   15   0.894\t1.808\t\t 0.508",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[17078,5], \"type\":[\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d18": {
+			"rdt:name": "filtered.selected.columns.df",
+			"rdt:value": "Row 1\t   1   15   0.894\t1.808\t\t 0.508",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[820,5], \"type\":[\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d19": {
+			"rdt:name": "five.highest.wind",
+			"rdt:value": "Row 5288  101 2019\t  56 1345  -2.503\t 45.2   -12.76\t\t\t 0  165.8  ...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[17078,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d20": {
+			"rdt:name": "five.highest.wind",
+			"rdt:value": "Row 5288  101 2019\t  56 1345  -2.503\t 45.2   -12.76\t\t\t 0  165.8  ...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[5,18], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d21": {
+			"rdt:name": "feature.highest.wind.df",
+			"rdt:value": "Row 5288\t  56 1345  -2.503\t\t\t 0\t 6.753",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[5,5], \"type\":[\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d22": {
+			"rdt:name": "hourly.df",
+			"rdt:value": "Row 1  101 2019\t   1   15   0.894\t 99.5\t0.819\t\t 0.508\t  0  0.1...",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[17078,19], \"type\":[\"integer\",\"integer\",\"integer\",\"integer\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"logical\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d23": {
+			"rdt:name": "highest.temp.Jul.date",
+			"rdt:value": "function(jul.date){...",
+			"rdt:valType": "function",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d24": {
+			"rdt:name": "min.Jul.date",
+			"rdt:value": "1",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"integer\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d25": {
+			"rdt:name": "max.Jul.date",
+			"rdt:value": "179",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"integer\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d26": {
+			"rdt:name": "Jul.range.vector",
+			"rdt:value": "  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20....",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[179], \"type\":[\"integer\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d27": {
+			"rdt:name": "high.temp.each.day.vector",
+			"rdt:value": "  7.400  -0.315   2.874   3.493   2.075   2.864  -5.774   1.839   2.658  -1.288....",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[179], \"type\":[\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d28": {
+			"rdt:name": "high.temp.days.df",
+			"rdt:value": "Row 1\t\t\t\t1\t\t\t\t\t   7.4",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[179,2], \"type\":[\"integer\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d29": {
+			"rdt:name": "high.temp.days.df",
+			"rdt:value": "Row 1   1  7.4",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[179,2], \"type\":[\"integer\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d30": {
+			"rdt:name": "total.rain.specific.day",
+			"rdt:value": "function(jul.date){...",
+			"rdt:valType": "function",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d31": {
+			"rdt:name": "total.rain.each.day.vector",
+			"rdt:value": "1499.810\t0.000\t0.762\t0.000\t3.556\t2.032\t0.000\t5.334\t4.572...",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[179], \"type\":[\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d32": {
+			"rdt:name": "total.rain.days.df",
+			"rdt:value": "Row 1\t\t\t\t1\t\t\t\t\t1499.81",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[179,2], \"type\":[\"integer\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d33": {
+			"rdt:name": "total.rain.days.df",
+			"rdt:value": "Row 1   1   1499.81",
+			"rdt:valType": "{\"container\":\"data_frame\", \"dimension\":[179,2], \"type\":[\"integer\",\"numeric\"]}",
+			"rdt:type": "Data",
+			"rdt:scope": "R_GlobalEnv",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d34": {
+			"rdt:name": "dev.2",
+			"rdt:value": "",
+			"rdt:valType": "Device",
+			"rdt:type": "Device",
+			"rdt:scope": "undefined",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d35": {
+			"rdt:name": "dev.2",
+			"rdt:value": "",
+			"rdt:valType": "Device",
+			"rdt:type": "Device",
+			"rdt:scope": "undefined",
+			"rdt:fromEnv": false,
+			"rdt:hash": "",
+			"rdt:timestamp": "",
+			"rdt:location": ""
+		},
+		"rdt:d36": {
+			"rdt:name": "dev.off.36.pdf",
+			"rdt:value": "data/36-dev.off.36.pdf",
+			"rdt:valType": "{\"container\":\"vector\", \"dimension\":[1], \"type\":[\"character\"]}",
+			"rdt:type": "File",
+			"rdt:scope": "undefined",
+			"rdt:fromEnv": false,
+			"rdt:hash": "36c19fea8613f18119caa9a7706b0f1b",
+			"rdt:timestamp": "2019-06-28T10.17.24EDT",
+			"rdt:location": "/Users/khanhl.ngo/HarvardForest/Day3Exercise/dev.off.36.pdf"
+		},
+
+		"rdt:environment": {
+			"rdt:name": "environment",
+			"rdt:architecture": "x86_64",
+			"rdt:operatingSystem": "darwin15.6.0",
+			"rdt:language": "R",
+			"rdt:langVersion": "R version 3.6.0 (2019-04-26)",
+			"rdt:script": "/Users/khanhl.ngo/HarvardForest/Day3Exercise/HF-data.R",
+			"rdt:scriptTimeStamp": "2019-06-10T15.05.25EDT",
+			"rdt:totalElapsedTime": "5.058",
+			"rdt:sourcedScripts": "",
+			"rdt:sourcedScriptTimeStamps": "",
+			"rdt:workingDirectory": "/Users/khanhl.ngo/HarvardForest/Day3Exercise",
+			"rdt:provDirectory": "/Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_HF-data",
+			"rdt:provTimestamp": "2019-06-28T10.17.18EDT",
+			"rdt:hashAlgorithm": "md5"
+		},
+
+		"rdt:l1": {
+			"name": "base",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l2": {
+			"name": "datasets",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l3": {
+			"name": "ggplot2",
+			"version": "3.1.1",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l4": {
+			"name": "graphics",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l5": {
+			"name": "grDevices",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l6": {
+			"name": "methods",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l7": {
+			"name": "provSummarizeR",
+			"version": "1.1",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l8": {
+			"name": "rdtLite",
+			"version": "1.1.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l9": {
+			"name": "stats",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+		"rdt:l10": {
+			"name": "utils",
+			"version": "3.6.0",
+			"prov:type": {
+				"$": "prov:Collection",
+				"type": "xsd:QName"
+			}
+		},
+
+		"rdt:f1": {
+			"name": "read.csv"
+		},
+		"rdt:f2": {
+			"name": "plot"
+		},
+		"rdt:f3": {
+			"name": "abline"
+		},
+		"rdt:f4": {
+			"name": "lsfit"
+		}
+	},
+
+	"wasInformedBy" : {
+		"rdt:pp1": {
+			"prov:informant": "rdt:p1",
+			"prov:informed": "rdt:p2"
+		},
+		"rdt:pp2": {
+			"prov:informant": "rdt:p2",
+			"prov:informed": "rdt:p3"
+		},
+		"rdt:pp3": {
+			"prov:informant": "rdt:p3",
+			"prov:informed": "rdt:p4"
+		},
+		"rdt:pp4": {
+			"prov:informant": "rdt:p4",
+			"prov:informed": "rdt:p5"
+		},
+		"rdt:pp5": {
+			"prov:informant": "rdt:p5",
+			"prov:informed": "rdt:p6"
+		},
+		"rdt:pp6": {
+			"prov:informant": "rdt:p6",
+			"prov:informed": "rdt:p7"
+		},
+		"rdt:pp7": {
+			"prov:informant": "rdt:p7",
+			"prov:informed": "rdt:p8"
+		},
+		"rdt:pp8": {
+			"prov:informant": "rdt:p8",
+			"prov:informed": "rdt:p9"
+		},
+		"rdt:pp9": {
+			"prov:informant": "rdt:p9",
+			"prov:informed": "rdt:p10"
+		},
+		"rdt:pp10": {
+			"prov:informant": "rdt:p10",
+			"prov:informed": "rdt:p11"
+		},
+		"rdt:pp11": {
+			"prov:informant": "rdt:p11",
+			"prov:informed": "rdt:p12"
+		},
+		"rdt:pp12": {
+			"prov:informant": "rdt:p12",
+			"prov:informed": "rdt:p13"
+		},
+		"rdt:pp13": {
+			"prov:informant": "rdt:p13",
+			"prov:informed": "rdt:p14"
+		},
+		"rdt:pp14": {
+			"prov:informant": "rdt:p14",
+			"prov:informed": "rdt:p15"
+		},
+		"rdt:pp15": {
+			"prov:informant": "rdt:p15",
+			"prov:informed": "rdt:p16"
+		},
+		"rdt:pp16": {
+			"prov:informant": "rdt:p16",
+			"prov:informed": "rdt:p17"
+		},
+		"rdt:pp17": {
+			"prov:informant": "rdt:p17",
+			"prov:informed": "rdt:p18"
+		},
+		"rdt:pp18": {
+			"prov:informant": "rdt:p18",
+			"prov:informed": "rdt:p19"
+		},
+		"rdt:pp19": {
+			"prov:informant": "rdt:p19",
+			"prov:informed": "rdt:p20"
+		},
+		"rdt:pp20": {
+			"prov:informant": "rdt:p20",
+			"prov:informed": "rdt:p21"
+		},
+		"rdt:pp21": {
+			"prov:informant": "rdt:p21",
+			"prov:informed": "rdt:p22"
+		},
+		"rdt:pp22": {
+			"prov:informant": "rdt:p22",
+			"prov:informed": "rdt:p23"
+		},
+		"rdt:pp23": {
+			"prov:informant": "rdt:p23",
+			"prov:informed": "rdt:p24"
+		},
+		"rdt:pp24": {
+			"prov:informant": "rdt:p24",
+			"prov:informed": "rdt:p25"
+		},
+		"rdt:pp25": {
+			"prov:informant": "rdt:p25",
+			"prov:informed": "rdt:p26"
+		},
+		"rdt:pp26": {
+			"prov:informant": "rdt:p26",
+			"prov:informed": "rdt:p27"
+		},
+		"rdt:pp27": {
+			"prov:informant": "rdt:p27",
+			"prov:informed": "rdt:p28"
+		},
+		"rdt:pp28": {
+			"prov:informant": "rdt:p28",
+			"prov:informed": "rdt:p29"
+		},
+		"rdt:pp29": {
+			"prov:informant": "rdt:p29",
+			"prov:informed": "rdt:p30"
+		},
+		"rdt:pp30": {
+			"prov:informant": "rdt:p30",
+			"prov:informed": "rdt:p31"
+		},
+		"rdt:pp31": {
+			"prov:informant": "rdt:p31",
+			"prov:informed": "rdt:p32"
+		},
+		"rdt:pp32": {
+			"prov:informant": "rdt:p32",
+			"prov:informed": "rdt:p33"
+		},
+		"rdt:pp33": {
+			"prov:informant": "rdt:p33",
+			"prov:informed": "rdt:p34"
+		},
+		"rdt:pp34": {
+			"prov:informant": "rdt:p34",
+			"prov:informed": "rdt:p35"
+		},
+		"rdt:pp35": {
+			"prov:informant": "rdt:p35",
+			"prov:informed": "rdt:p36"
+		},
+		"rdt:pp36": {
+			"prov:informant": "rdt:p36",
+			"prov:informed": "rdt:p37"
+		},
+		"rdt:pp37": {
+			"prov:informant": "rdt:p37",
+			"prov:informed": "rdt:p38"
+		},
+		"rdt:pp38": {
+			"prov:informant": "rdt:p38",
+			"prov:informed": "rdt:p39"
+		},
+		"rdt:pp39": {
+			"prov:informant": "rdt:p39",
+			"prov:informed": "rdt:p40"
+		}
+	},
+
+	"wasGeneratedBy" : {
+		"rdt:pd1": {
+			"prov:activity": "rdt:p2",
+			"prov:entity": "rdt:d2"
+		},
+		"rdt:pd2": {
+			"prov:activity": "rdt:p3",
+			"prov:entity": "rdt:d3"
+		},
+		"rdt:pd3": {
+			"prov:activity": "rdt:p4",
+			"prov:entity": "rdt:d4"
+		},
+		"rdt:pd4": {
+			"prov:activity": "rdt:p5",
+			"prov:entity": "rdt:d5"
+		},
+		"rdt:pd5": {
+			"prov:activity": "rdt:p5",
+			"prov:entity": "rdt:d6"
+		},
+		"rdt:pd6": {
+			"prov:activity": "rdt:p6",
+			"prov:entity": "rdt:d7"
+		},
+		"rdt:pd7": {
+			"prov:activity": "rdt:p7",
+			"prov:entity": "rdt:d8"
+		},
+		"rdt:pd8": {
+			"prov:activity": "rdt:p10",
+			"prov:entity": "rdt:d9"
+		},
+		"rdt:pd9": {
+			"prov:activity": "rdt:p11",
+			"prov:entity": "rdt:d10"
+		},
+		"rdt:pd10": {
+			"prov:activity": "rdt:p12",
+			"prov:entity": "rdt:d11"
+		},
+		"rdt:pd11": {
+			"prov:activity": "rdt:p13",
+			"prov:entity": "rdt:d12"
+		},
+		"rdt:pd12": {
+			"prov:activity": "rdt:p15",
+			"prov:entity": "rdt:d13"
+		},
+		"rdt:pd13": {
+			"prov:activity": "rdt:p16",
+			"prov:entity": "rdt:d14"
+		},
+		"rdt:pd14": {
+			"prov:activity": "rdt:p17",
+			"prov:entity": "rdt:d15"
+		},
+		"rdt:pd15": {
+			"prov:activity": "rdt:p18",
+			"prov:entity": "rdt:d16"
+		},
+		"rdt:pd16": {
+			"prov:activity": "rdt:p19",
+			"prov:entity": "rdt:d17"
+		},
+		"rdt:pd17": {
+			"prov:activity": "rdt:p20",
+			"prov:entity": "rdt:d18"
+		},
+		"rdt:pd18": {
+			"prov:activity": "rdt:p21",
+			"prov:entity": "rdt:d19"
+		},
+		"rdt:pd19": {
+			"prov:activity": "rdt:p22",
+			"prov:entity": "rdt:d20"
+		},
+		"rdt:pd20": {
+			"prov:activity": "rdt:p23",
+			"prov:entity": "rdt:d21"
+		},
+		"rdt:pd21": {
+			"prov:activity": "rdt:p24",
+			"prov:entity": "rdt:d22"
+		},
+		"rdt:pd22": {
+			"prov:activity": "rdt:p25",
+			"prov:entity": "rdt:d23"
+		},
+		"rdt:pd23": {
+			"prov:activity": "rdt:p27",
+			"prov:entity": "rdt:d24"
+		},
+		"rdt:pd24": {
+			"prov:activity": "rdt:p28",
+			"prov:entity": "rdt:d25"
+		},
+		"rdt:pd25": {
+			"prov:activity": "rdt:p29",
+			"prov:entity": "rdt:d26"
+		},
+		"rdt:pd26": {
+			"prov:activity": "rdt:p30",
+			"prov:entity": "rdt:d27"
+		},
+		"rdt:pd27": {
+			"prov:activity": "rdt:p31",
+			"prov:entity": "rdt:d28"
+		},
+		"rdt:pd28": {
+			"prov:activity": "rdt:p32",
+			"prov:entity": "rdt:d29"
+		},
+		"rdt:pd29": {
+			"prov:activity": "rdt:p33",
+			"prov:entity": "rdt:d30"
+		},
+		"rdt:pd30": {
+			"prov:activity": "rdt:p34",
+			"prov:entity": "rdt:d31"
+		},
+		"rdt:pd31": {
+			"prov:activity": "rdt:p35",
+			"prov:entity": "rdt:d32"
+		},
+		"rdt:pd32": {
+			"prov:activity": "rdt:p36",
+			"prov:entity": "rdt:d33"
+		},
+		"rdt:pd33": {
+			"prov:activity": "rdt:p38",
+			"prov:entity": "rdt:d34"
+		},
+		"rdt:pd34": {
+			"prov:activity": "rdt:p39",
+			"prov:entity": "rdt:d35"
+		},
+		"rdt:pd35": {
+			"prov:activity": "rdt:p40",
+			"prov:entity": "rdt:d36"
+		}
+	},
+
+	"used" : {
+		"rdt:dp1": {
+			"prov:entity": "rdt:d1",
+			"prov:activity": "rdt:p2"
+		},
+		"rdt:dp2": {
+			"prov:entity": "rdt:d2",
+			"prov:activity": "rdt:p5"
+		},
+		"rdt:dp3": {
+			"prov:entity": "rdt:d3",
+			"prov:activity": "rdt:p5"
+		},
+		"rdt:dp4": {
+			"prov:entity": "rdt:d4",
+			"prov:activity": "rdt:p5"
+		},
+		"rdt:dp5": {
+			"prov:entity": "rdt:d5",
+			"prov:activity": "rdt:p8"
+		},
+		"rdt:dp6": {
+			"prov:entity": "rdt:d7",
+			"prov:activity": "rdt:p8"
+		},
+		"rdt:dp7": {
+			"prov:entity": "rdt:d6",
+			"prov:activity": "rdt:p9"
+		},
+		"rdt:dp8": {
+			"prov:entity": "rdt:d8",
+			"prov:activity": "rdt:p9"
+		},
+		"rdt:dp9": {
+			"prov:entity": "rdt:d7",
+			"prov:activity": "rdt:p10"
+		},
+		"rdt:dp10": {
+			"prov:entity": "rdt:d8",
+			"prov:activity": "rdt:p11"
+		},
+		"rdt:dp11": {
+			"prov:entity": "rdt:d9",
+			"prov:activity": "rdt:p12"
+		},
+		"rdt:dp12": {
+			"prov:entity": "rdt:d10",
+			"prov:activity": "rdt:p13"
+		},
+		"rdt:dp13": {
+			"prov:entity": "rdt:d11",
+			"prov:activity": "rdt:p15"
+		},
+		"rdt:dp14": {
+			"prov:entity": "rdt:d13",
+			"prov:activity": "rdt:p16"
+		},
+		"rdt:dp15": {
+			"prov:entity": "rdt:d13",
+			"prov:activity": "rdt:p17"
+		},
+		"rdt:dp16": {
+			"prov:entity": "rdt:d14",
+			"prov:activity": "rdt:p18"
+		},
+		"rdt:dp17": {
+			"prov:entity": "rdt:d13",
+			"prov:activity": "rdt:p19"
+		},
+		"rdt:dp18": {
+			"prov:entity": "rdt:d16",
+			"prov:activity": "rdt:p20"
+		},
+		"rdt:dp19": {
+			"prov:entity": "rdt:d13",
+			"prov:activity": "rdt:p21"
+		},
+		"rdt:dp20": {
+			"prov:entity": "rdt:d19",
+			"prov:activity": "rdt:p22"
+		},
+		"rdt:dp21": {
+			"prov:entity": "rdt:d20",
+			"prov:activity": "rdt:p23"
+		},
+		"rdt:dp22": {
+			"prov:entity": "rdt:d13",
+			"prov:activity": "rdt:p24"
+		},
+		"rdt:dp23": {
+			"prov:entity": "rdt:d22",
+			"prov:activity": "rdt:p26"
+		},
+		"rdt:dp24": {
+			"prov:entity": "rdt:d23",
+			"prov:activity": "rdt:p26"
+		},
+		"rdt:dp25": {
+			"prov:entity": "rdt:d22",
+			"prov:activity": "rdt:p27"
+		},
+		"rdt:dp26": {
+			"prov:entity": "rdt:d22",
+			"prov:activity": "rdt:p28"
+		},
+		"rdt:dp27": {
+			"prov:entity": "rdt:d24",
+			"prov:activity": "rdt:p29"
+		},
+		"rdt:dp28": {
+			"prov:entity": "rdt:d25",
+			"prov:activity": "rdt:p29"
+		},
+		"rdt:dp29": {
+			"prov:entity": "rdt:d26",
+			"prov:activity": "rdt:p30"
+		},
+		"rdt:dp30": {
+			"prov:entity": "rdt:d23",
+			"prov:activity": "rdt:p30"
+		},
+		"rdt:dp31": {
+			"prov:entity": "rdt:d26",
+			"prov:activity": "rdt:p31"
+		},
+		"rdt:dp32": {
+			"prov:entity": "rdt:d27",
+			"prov:activity": "rdt:p31"
+		},
+		"rdt:dp33": {
+			"prov:entity": "rdt:d28",
+			"prov:activity": "rdt:p32"
+		},
+		"rdt:dp34": {
+			"prov:entity": "rdt:d26",
+			"prov:activity": "rdt:p34"
+		},
+		"rdt:dp35": {
+			"prov:entity": "rdt:d30",
+			"prov:activity": "rdt:p34"
+		},
+		"rdt:dp36": {
+			"prov:entity": "rdt:d26",
+			"prov:activity": "rdt:p35"
+		},
+		"rdt:dp37": {
+			"prov:entity": "rdt:d31",
+			"prov:activity": "rdt:p35"
+		},
+		"rdt:dp38": {
+			"prov:entity": "rdt:d32",
+			"prov:activity": "rdt:p36"
+		},
+		"rdt:dp39": {
+			"prov:entity": "rdt:d33",
+			"prov:activity": "rdt:p37"
+		},
+		"rdt:dp40": {
+			"prov:entity": "rdt:d29",
+			"prov:activity": "rdt:p38"
+		},
+		"rdt:dp41": {
+			"prov:entity": "rdt:d29",
+			"prov:activity": "rdt:p39"
+		},
+		"rdt:dp42": {
+			"prov:entity": "rdt:d34",
+			"prov:activity": "rdt:p39"
+		},
+		"rdt:dp43": {
+			"prov:entity": "rdt:d35",
+			"prov:activity": "rdt:p40"
+		},
+
+		"rdt:fp1": {
+			"prov:entity": "rdt:f1",
+			"prov:activity": "rdt:p12"
+		},
+		"rdt:fp2": {
+			"prov:entity": "rdt:f1",
+			"prov:activity": "rdt:p13"
+		},
+		"rdt:fp3": {
+			"prov:entity": "rdt:f2",
+			"prov:activity": "rdt:p38"
+		},
+		"rdt:fp4": {
+			"prov:entity": "rdt:f3",
+			"prov:activity": "rdt:p39"
+		},
+		"rdt:fp5": {
+			"prov:entity": "rdt:f4",
+			"prov:activity": "rdt:p39"
+		}
+	},
+
+	"hadMember" : {
+		"rdt:m1": {
+			"prov:collection": "rdt:l4",
+			"prov:entity": "rdt:f2"
+		},
+		"rdt:m2": {
+			"prov:collection": "rdt:l4",
+			"prov:entity": "rdt:f3"
+		},
+		"rdt:m3": {
+			"prov:collection": "rdt:l9",
+			"prov:entity": "rdt:f4"
+		},
+		"rdt:m4": {
+			"prov:collection": "rdt:l10",
+			"prov:entity": "rdt:f1"
+		}
+	}
+}

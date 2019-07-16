@@ -36,9 +36,9 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	newer.prov.info <- get.prov.info.object(newerProv.dir)
 
 	# detect changes in different aspects
-	environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
+	print.environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
 	print.library.changes (provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
-	prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
+	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
 }
 
 #' print.library.changes gets changes on library by calling a helper
@@ -47,23 +47,23 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 #' @param newerProv.lib.df library data frame for newer provenance
 #' @noRd
 print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
+	cat ("\n\nLIBRARY CHANGES: ")
 	# get the list of changes
 	lib.change.list <- find.library.changes(olderProv.lib.df, newerProv.lib.df)
-	lib.updates <- as.data.frame(lib.change.list[1])
-	lib.add <- as.data.frame(lib.change.list[2])
-	lib.remove <- as.data.frame(lib.change.list[3])
 
-	# print out the result
-	cat ("\n\nLIBRARY CHANGES:\n")
+	# if list is null, R returns empty (non-NULL) data frames
+	lib.updates.df <- as.data.frame(lib.change.list[1])
+	lib.add.df <- as.data.frame(lib.change.list[2])
+	lib.remove.df <- as.data.frame(lib.change.list[3])
 
-	cat ("Library updates: ")
-	print.custom.df(lib.updates)
+	cat ("\nLibrary updates: ")
+	print.custom.df(lib.updates.df)
 
 	cat ("\nLibraries added: ")
-	print.custom.df(lib.add)
+	print.custom.df(lib.add.df)
 
 	cat ("\nLibraries removed: ")
-	print.custom.df(lib.remove)
+	print.custom.df(lib.remove.df)
 }
 
 
@@ -82,8 +82,8 @@ find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 
 	# the input data frames have 3 columns: id, name, version
 	# removes unneccesary id rows
-	olderProv.lib.df <- subset(olderProv.lib.df, select = -id)
-	newerProv.lib.df <- subset(newerProv.lib.df, select = -id)
+	olderProv.lib.df <- subset(olderProv.lib.df, select = -1)
+	newerProv.lib.df <- subset(newerProv.lib.df, select = -1)
 
 	# find library updates
 	# join two data frames by same "name"
@@ -104,26 +104,46 @@ find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 	return (list(lib.updates.df, added.lib.df, removed.lib.df))
 }
 
-print.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
-	if(nrow(specific.data.frame) == 0){
-		cat ("NONE\n")
-	}else{
-		cat ("\n")
-		print.data.frame(specific.data.frame, row.names = has.row.names)
+#' print.environment.changes gets environment changes by calling
+#' helper method find.environment.changes and prints out the result
+#' @param olderProv.env.df environment data frame for older provenance
+#' @param newerProv.env.df environment data frame for newer provenance
+#' @noRd
+print.environment.changes <- function(olderProv.env.df, newerProv.env.df) {
+	cat ("\n\nENVIRONMENT CHANGES: ")
+	env.change.list <- find.environment.changes(olderProv.env.df, newerProv.env.df)
+
+	env.updates.df <- as.data.frame(env.change.list[1])
+	env.added.df <- as.data.frame(env.change.list[2])
+	env.removed.df <- as.data.frame(env.change.list[3])
+
+	cat("\nEnvironment updates: ") 
+	print.custom.df(env.updates.df)
+
+	# rare case: a new environment factor has been added,
+	# only prints out when found such factor
+	if(!is.null(env.added.df) && nrow(env.added.df) != 0){
+		cat("\nNew environment factors added: ")
+		print.custom.df(env.added.df)
+	}
+
+	# rare case: an environment factor has been removed,
+	# only prints out when found such factor
+	if(!is.null(env.removed.df) && nrow(env.removed.df) != 0){
+		cat("\nRemoved environment factor: ")
+		print.custom.df(env.removed.df)
 	}
 }
 
-#' environment.changes detects changes in the environments in which 
+#' find.environment.changes detects changes in the environments in which 
 #' the provenances were collected
-#' The method prints out 3 main information to compare differences 
-#' between 2 environment data frames:
-#' environment value changes, any new collected environment factors and
-#' any removed environment factors by provenance collector tool
-#' @param olderProv.lib.df environment data frame for older provenance
-#' @param newerProv.lib.df environment data frame for newer provenance
+#' The method returns a list of 3 main information:
+#' environment value changes, any new added environment factors and
+#' any removed environment factors by provenance tool
+#' @param olderProv.env.df environment data frame for older provenance
+#' @param newerProv.env.df environment data frame for newer provenance
 #' @noRd
-environment.changes <- function (olderProv.env.df, newerProv.env.df) {
-	cat ("\nENVIRONMENT CHANGES:\n")
+find.environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 	# case: input data frame(s) do(es) not exist
 	if (check.df.existence("Environment", olderProv.env.df, newerProv.env.df) == FALSE) {
 		return(NULL)
@@ -134,26 +154,44 @@ environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 	same.label.env.df <- dplyr::inner_join(olderProv.env.df, newerProv.env.df, by = "label")
 	env.changes.df <- same.label.env.df[same.label.env.df$value.x != same.label.env.df$value.y, ]
 	# rename the columns for easier reading
-	colnames(env.changes.df) <- c("name", "old.env.value", "new.env.value")
-	if (nrow(env.changes.df) == 0){
-		cat ("Environment value changes: NONE")
-	}else{
-		cat ("Environment value changes: \n")
-		print.data.frame(env.changes.df, row.names = FALSE)
-	}
+	colnames(env.changes.df) <- c("label", "old.value", "new.value")
 
 	# find possible added environment factor from the newer version
 	added.env.df <- dplyr::anti_join(newerProv.env.df, olderProv.env.df, by = "label")
-	if (nrow(added.env.df) != 0){
-		cat ("\nEnvironment factors added: \n")
-		print.data.frame(added.env.df, row.names = FALSE)
-	}
 
 	# find possible removed environment factor from the older version
 	removed.env.df <- dplyr::anti_join(olderProv.env.df, newerProv.env.df, by = "label")
-	if (nrow(removed.env.df) != 0){
-		cat ("\nEnvironment factors removed: \n")
-		print.data.frame(removed.env.df, row.names = FALSE)
+
+	return (list(env.changes.df, added.env.df, removed.env.df))
+}
+
+#' print.prov.tool.changes gets prov tool changes by calling
+#' a helper method find.prov.tool.changes and prints out the result
+#' @param olderProv.tool.df tool data frame for older provenance
+#' @param newerProv.tool.df tool data frame for newer provenance 
+#' @noRd
+print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
+	cat ("\n\nPROVENANCE TOOL CHANGES: \n")
+	tool.change.list <- find.prov.tool.changes(olderProv.tool.df, newerProv.tool.df)
+	# if the list returned is null, as.data.frame creates an empty data frame,
+	# so no need to handle null case here
+	update.tool.df <- as.data.frame(tool.change.list[1])
+	added.tool.df <- as.data.frame(tool.change.list[2])
+	removed.tool.df <- as.data.frame(tool.change.list[3])
+
+	cat("\nTool updates: ")
+	print.custom.df(update.tool.df)
+
+	# since this case is rare, only prints out when found a new tool
+	if (!is.null(added.tool.df) && nrow(added.tool.df) != 0){
+		cat ("\nNew provenance tool: \n")
+		print.data.frame(added.tool.df, row.names = FALSE)
+	}
+
+	# since this case is rare, only prints out when found a removed tool 
+	if (!is.null(removed.tool.df) && nrow(removed.tool.df) != 0){
+		cat("\nRemoved provenance tool: \n")
+		print.data.frame(removed.tool.df, row.names = FALSE)
 	}
 }
 
@@ -162,36 +200,49 @@ environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 #' @param olderProv.tool.df tool data frame for older provenance
 #' @param newerProv.tool.df tool data frame for newer provenance
 #' @noRd
-#' 
-prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
-	cat ("\nPROVENANCE TOOL CHANGES: \n")
-	# case: input data frame(s) do(es) not exist 
+find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
+	# case: input data frame(s) do(es) not exist, returns immediately
 	if (check.df.existence("Provenance tool", olderProv.tool.df, newerProv.tool.df) == FALSE){
 		return (NULL)
 	}
 
-	# rare case: no provenance tools are shown in the data frame
+	# rare case: no provenance tools are shown in the data frame, returns immediately
 	if (nrow(olderProv.tool.df) == 0 || nrow(newerProv.tool.df) == 0){
-		warning("no provenance tool was recorded in one of the given provenance directory by provParseR")
+		warning("no provenance tool was recorded by provParseR\n")
 		return(NULL)
 	}
 
 	# finds the tool and json versions in each provenance
 	same.tool.df <- dplyr::inner_join(olderProv.tool.df, newerProv.tool.df, by = "tool.name")
-	# renames the columns for nicer output
 	colnames(same.tool.df) <- c("tool.name", "old.tool.version", "old.json.version", 
 		"new.tool.version", "new.json.version")
-	# case: if tool or json versions are different, show all (same and different) 
-	if (same.tool.df$old.tool.version != same.tool.df$new.tool.version
-		|| same.tool.df$old.json.version != same.tool.df$old.json.version){
-		print.data.frame(same.tool.df, row.names = FALSE)
+	same.tool.df <- same.tool.df[ , c(1, 2, 4, 3, 5)] # swaps column for nicer output
+
+	# case: if there are no updates, returns an empty data frame 
+	if (same.tool.df$old.tool.version == same.tool.df$new.tool.version
+		&& same.tool.df$old.json.version == same.tool.df$new.json.version){
+		same.tool.df <- data.frame()
 	}
 
 	# case: for future updates, if new tools are added, show the new tool
 	added.tool.df <- dplyr::anti_join(newerProv.tool.df, olderProv.tool.df, by = "tool.name")
-	if (nrow(added.tool.df) != 0){
-		cat ("\nNew tool used to collect provenance: \n")
-		print.data.frame(added.tool.df, row.names = FALSE)
+	
+	# rare case: provenance tool has been removed since the old prov version
+	removed.tool.df <- dplyr::anti_join(olderProv.tool.df, newerProv.tool.df, by = "tool.name")
+
+	return (list(same.tool.df, added.tool.df, removed.tool.df))
+}
+
+#' print.custom.df prints a data frame if nrow is larger than 0
+#' @param specific.data.frame data frame to be printed out
+#' @param has.row.names logical value to include row names or not
+#' @noRd
+print.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
+	if(is.null(specific.data.frame) || nrow(specific.data.frame) == 0){
+		cat ("NONE\n")
+	}else{
+		cat ("\n")
+		print.data.frame(specific.data.frame, row.names = has.row.names)
 	}
 }
 
@@ -244,7 +295,7 @@ get.prov.info.object <- function (directory) {
 #' @noRd
 check.df.existence <- function (aspect, df1, df2){
 	if(is.null(df1) || is.null(df2)){
-		warning (paste(aspect, "data frames returned by provParseR is null\n"))
+		warning (paste(aspect, "data frames returned by provParseR is NULL\n"))
 		return (FALSE)
 	}
 	return (TRUE)
