@@ -1,0 +1,50 @@
+PROVENANCE SUMMARY for HF-data.R 
+
+ENVIRONMENT:
+Executed at 2019-06-28T10.17.18EDT 
+Total execution time is 5.058 seconds
+Script last modified at 2019-06-10T15.05.25EDT 
+Executed with R version 3.6.0 (2019-04-26) 
+Executed on x86_64 running darwin15.6.0 
+Provenance was collected with rdtLite 1.1.0 
+Provenance is stored in /Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_HF-data 
+Hash algorithm is md5 
+
+LIBRARIES:
+base 3.6.0
+datasets 3.6.0
+ggplot2 3.1.1
+graphics 3.6.0
+grDevices 3.6.0
+methods 3.6.0
+provSummarizeR 1.1
+rdtLite 1.1.0
+stats 3.6.0
+utils 3.6.0
+
+SOURCED SCRIPTS:
+None
+
+INPUTS: 
+URL : http://harvardforest.fas.harvard.edu/sites/harvardforest.fas.harvard.edu/files/weather/metsta.dat 
+   2019-06-28 10:17:19 
+File : hourly.csv 
+   2019-06-28 10:17:21 
+   adb2f232ff35b404c739958ec9ae403e 
+File : daily.csv 
+   2019-06-28 10:17:21 
+   3801fbd540f2d353d761a1434c416a4a 
+
+OUTPUTS: 
+File : hourly.csv 
+   2019-06-28 10:17:21 
+   adb2f232ff35b404c739958ec9ae403e 
+File : daily.csv 
+   2019-06-28 10:17:21 
+   3801fbd540f2d353d761a1434c416a4a 
+File : dev.off.36.pdf 
+   2019-06-28 10:17:24 
+   36c19fea8613f18119caa9a7706b0f1b 
+
+ERRORS:
+None

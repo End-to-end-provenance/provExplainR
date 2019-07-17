@@ -1,0 +1,41 @@
+"ddg.type","ddg.num","ddg.name","ddg.value","ddg.return.linked","ddg.time","ddg.snum","ddg.startLine","ddg.startCol","ddg.endLine","ddg.endCol"
+"Start",1,"HF-data.R","HF-data.R",FALSE,47.928,NA,NA,NA,NA,NA
+"Operation",2,"raw.file <- readLines(""http://harvardforest.fas.harvard.edu/","raw.file <- readLines(""http://harvardforest.fas.harvard.edu/",FALSE,48.315,1,9,1,9,136
+"Operation",3,"hourly.vector <- vector()","hourly.vector <- vector()",FALSE,48.498,1,10,1,10,25
+"Operation",4,"daily.vector <- vector()","daily.vector <- vector()",FALSE,48.504,1,11,1,11,24
+"Operation",5,"for (i in 1:length(raw.file)) {    if (substring(raw.file[i]","for (i in 1:length(raw.file)) {    if (substring(raw.file[i]",FALSE,50.199,1,13,1,18,1
+"Operation",6,"hourly.file <- file(""hourly.csv"")","hourly.file <- file(""hourly.csv"")",FALSE,50.274,1,20,1,20,33
+"Operation",7,"daily.file <- file(""daily.csv"")","daily.file <- file(""daily.csv"")",FALSE,50.46,1,21,1,21,31
+"Operation",8,"writeLines(hourly.vector, con = hourly.file)","writeLines(hourly.vector, con = hourly.file)",FALSE,50.643,1,23,1,23,44
+"Operation",9,"writeLines(daily.vector, con = daily.file)","writeLines(daily.vector, con = daily.file)",FALSE,50.654,1,24,1,24,42
+"Operation",10,"close(hourly.file)","close(hourly.file)",FALSE,51.013,1,26,1,26,18
+"Operation",11,"close(daily.file)","close(daily.file)",FALSE,51.36,1,27,1,27,17
+"Operation",12,"hourly.df <- read.csv(""hourly.csv"", header = FALSE)","hourly.df <- read.csv(""hourly.csv"", header = FALSE)",FALSE,52.599,1,29,1,29,51
+"Operation",13,"daily.df <- read.csv(""daily.csv"", header = FALSE)","daily.df <- read.csv(""daily.csv"", header = FALSE)",FALSE,53.777,1,30,1,30,49
+"Operation",14,"print(""testing"")","print(""testing"")",FALSE,53.786,1,34,1,34,16
+"Operation",15,"colnames(hourly.df) <- c(""type"", ""year"", ""JulDate"", ""time"", ","colnames(hourly.df) <- c(""type"", ""year"", ""JulDate"", ""time"", ",FALSE,53.789,1,37,1,41,70
+"Operation",16,"rain.df <- hourly.df[hourly.df$precipitation > 0, ]","rain.df <- hourly.df[hourly.df$precipitation > 0, ]",FALSE,53.804,1,44,1,44,51
+"Operation",17,"temp.df <- hourly.df[hourly.df$airTemp < hourly.df$soilTemp,","temp.df <- hourly.df[hourly.df$airTemp < hourly.df$soilTemp,",FALSE,53.818,1,47,1,47,62
+"Operation",18,"rain.temp.df <- rain.df[rain.df$airTemp < rain.df$soilTemp, ","rain.temp.df <- rain.df[rain.df$airTemp < rain.df$soilTemp, ",FALSE,53.832,1,50,1,50,61
+"Operation",19,"selected.columns.df <- hourly.df[, c(""JulDate"", ""time"", ""air","selected.columns.df <- hourly.df[, c(""JulDate"", ""time"", ""air",FALSE,53.843,1,53,1,53,97
+"Operation",20,"filtered.selected.columns.df <- rain.temp.df[, c(""JulDate"", ","filtered.selected.columns.df <- rain.temp.df[, c(""JulDate"", ",FALSE,53.854,1,56,1,56,109
+"Operation",21,"five.highest.wind <- hourly.df[order(hourly.df$windSpeed, de","five.highest.wind <- hourly.df[order(hourly.df$windSpeed, de",FALSE,53.866,1,59,1,59,79
+"Operation",22,"five.highest.wind <- five.highest.wind[1:5, ]","five.highest.wind <- five.highest.wind[1:5, ]",FALSE,53.877,1,60,1,60,45
+"Operation",23,"feature.highest.wind.df <- five.highest.wind[, c(""JulDate"", ","feature.highest.wind.df <- five.highest.wind[, c(""JulDate"", ",FALSE,53.887,1,63,1,63,110
+"Operation",24,"hourly.df$hasRain <- hourly.df$precipitation > 0","hourly.df$hasRain <- hourly.df$precipitation > 0",FALSE,53.897,1,66,1,66,48
+"Operation",25,"highest.temp.Jul.date <- function(jul.date) {    specific.ju","highest.temp.Jul.date <- function(jul.date) {    specific.ju",FALSE,53.909,1,69,1,72,1
+"Operation",26,"print(highest.temp.Jul.date(121))","print(highest.temp.Jul.date(121))",FALSE,53.914,1,74,1,74,33
+"Operation",27,"min.Jul.date <- min(hourly.df$JulDate)","min.Jul.date <- min(hourly.df$JulDate)",FALSE,53.919,1,77,1,77,38
+"Operation",28,"max.Jul.date <- max(hourly.df$JulDate)","max.Jul.date <- max(hourly.df$JulDate)",FALSE,53.929,1,78,1,78,38
+"Operation",29,"Jul.range.vector <- c(min.Jul.date:max.Jul.date)","Jul.range.vector <- c(min.Jul.date:max.Jul.date)",FALSE,53.937,1,81,1,81,49
+"Operation",30,"high.temp.each.day.vector <- sapply(Jul.range.vector, highes","high.temp.each.day.vector <- sapply(Jul.range.vector, highes",FALSE,54.074,1,84,1,84,76
+"Operation",31,"high.temp.days.df <- data.frame(Jul.range.vector, high.temp.","high.temp.days.df <- data.frame(Jul.range.vector, high.temp.",FALSE,54.082,1,85,1,85,76
+"Operation",32,"colnames(high.temp.days.df) <- c(""Day"", ""Temp"")","colnames(high.temp.days.df) <- c(""Day"", ""Temp"")",FALSE,54.09,1,86,1,86,47
+"Operation",33,"total.rain.specific.day <- function(jul.date) {    temp.date","total.rain.specific.day <- function(jul.date) {    temp.date",FALSE,54.099,1,89,1,92,1
+"Operation",34,"total.rain.each.day.vector <- sapply(Jul.range.vector, total","total.rain.each.day.vector <- sapply(Jul.range.vector, total",FALSE,54.25,1,94,1,94,79
+"Operation",35,"total.rain.days.df <- data.frame(Jul.range.vector, total.rai","total.rain.days.df <- data.frame(Jul.range.vector, total.rai",FALSE,54.263,1,95,1,95,78
+"Operation",36,"colnames(total.rain.days.df) <- c(""Day"", ""TotalRain"")","colnames(total.rain.days.df) <- c(""Day"", ""TotalRain"")",FALSE,54.271,1,96,1,96,53
+"Operation",37,"summary(total.rain.days.df$TotalRain > 0)","summary(total.rain.days.df$TotalRain > 0)",FALSE,54.281,1,99,1,99,41
+"Operation",38,"plot(high.temp.days.df$Day, high.temp.days.df$Temp)","plot(high.temp.days.df$Day, high.temp.days.df$Temp)",FALSE,54.318,1,102,1,102,51
+"Operation",39,"abline(lsfit(high.temp.days.df$Day, high.temp.days.df$Temp),","abline(lsfit(high.temp.days.df$Day, high.temp.days.df$Temp),",FALSE,54.324,1,105,1,105,73
+"Finish",40,"HF-data.R","HF-data.R",FALSE,54.335,NA,NA,NA,NA,NA
