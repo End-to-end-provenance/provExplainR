@@ -41,7 +41,7 @@ test_that("error message is shown when the json file does not exist", {
 	# provenance directory without json file
 	no.json.prov.dir <- get.test.prov.dirs ("prov_HF-data_no-json")
 
-	expect_error(get.prov.info.object(no.json.prov.dir), regexp = paste("prov.json file in the", no.json.prov.dir, "not found\n"))
+	expect_error(get.prov.info.object(no.json.prov.dir), regexp = paste("prov.json file in ", no.json.prov.dir, "is not found\n"))
 })
 
 ########## test checking existence of data frames ##########

@@ -41,7 +41,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
 }
 
-#' print.library.changes gets changes on library by calling a helper
+#' print.library.changes gets changes in library by calling a helper
 #' method find.library.changes, and prints out the result
 #' @param olderProv.lib.df library data frame for older provenance
 #' @param newerProv.lib.df library data frame for newer provenance
@@ -278,7 +278,7 @@ get.prov.info.object <- function (directory) {
 
 	# case: json file does not exist
 	if(!file.exists(json.file)){
-		stop(paste("prov.json file in the", directory, "not found\n"))
+		stop(paste("prov.json file in ", directory, "is not found\n"))
 	}
 
 	# returns the ProvInfo object returned by provParseR
