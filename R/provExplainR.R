@@ -1,6 +1,5 @@
 #' Immplementation of provExplainR: detect changes and report to users
 #' @author Khanh Ngo
-#' @version 06/24/19
 
 #' provExplainR takes in two provenance directories, detect changes, and
 #' report to users. Set 'save' parameter to be true to have the results
@@ -41,7 +40,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
 }
 
-#' print.library.changes gets changes on library by calling a helper
+#' print.library.changes gets changes in library by calling a helper
 #' method find.library.changes, and prints out the result
 #' @param olderProv.lib.df library data frame for older provenance
 #' @param newerProv.lib.df library data frame for newer provenance
@@ -57,13 +56,13 @@ print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	lib.remove.df <- as.data.frame(lib.change.list[3])
 
 	cat ("\nLibrary updates: ")
-	print.custom.df(lib.updates.df)
+	display.custom.df(lib.updates.df)
 
 	cat ("\nLibraries added: ")
-	print.custom.df(lib.add.df)
+	display.custom.df(lib.add.df)
 
 	cat ("\nLibraries removed: ")
-	print.custom.df(lib.remove.df)
+	display.custom.df(lib.remove.df)
 }
 
 
@@ -118,20 +117,20 @@ print.environment.changes <- function(olderProv.env.df, newerProv.env.df) {
 	env.removed.df <- as.data.frame(env.change.list[3])
 
 	cat("\nEnvironment updates: ") 
-	print.custom.df(env.updates.df)
+	display.custom.df(env.updates.df)
 
 	# rare case: a new environment factor has been added,
 	# only prints out when found such factor
 	if(!is.null(env.added.df) && nrow(env.added.df) != 0){
 		cat("\nNew environment factors added: ")
-		print.custom.df(env.added.df)
+		display.custom.df(env.added.df)
 	}
 
 	# rare case: an environment factor has been removed,
 	# only prints out when found such factor
 	if(!is.null(env.removed.df) && nrow(env.removed.df) != 0){
 		cat("\nRemoved environment factor: ")
-		print.custom.df(env.removed.df)
+		display.custom.df(env.removed.df)
 	}
 }
 
@@ -180,7 +179,7 @@ print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	removed.tool.df <- as.data.frame(tool.change.list[3])
 
 	cat("\nTool updates: ")
-	print.custom.df(update.tool.df)
+	display.custom.df(update.tool.df)
 
 	# since this case is rare, only prints out when found a new tool
 	if (!is.null(added.tool.df) && nrow(added.tool.df) != 0){
@@ -233,11 +232,11 @@ find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	return (list(same.tool.df, added.tool.df, removed.tool.df))
 }
 
-#' print.custom.df prints a data frame if nrow is larger than 0
+#' display.custom.df prints a data frame if nrow is larger than 0
 #' @param specific.data.frame data frame to be printed out
 #' @param has.row.names logical value to include row names or not
 #' @noRd
-print.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
+display.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
 	if(is.null(specific.data.frame) || nrow(specific.data.frame) == 0){
 		cat ("NONE\n")
 	}else{
@@ -278,7 +277,7 @@ get.prov.info.object <- function (directory) {
 
 	# case: json file does not exist
 	if(!file.exists(json.file)){
-		stop(paste("prov.json file in the", directory, "not found\n"))
+		stop(paste("prov.json file in ", directory, "is not found\n"))
 	}
 
 	# returns the ProvInfo object returned by provParseR

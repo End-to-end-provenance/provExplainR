@@ -1,0 +1,18 @@
+language: r
+r:
+  - release
+  - devel
+
+sudo: false
+cache: packages
+
+warnings_are_errors: true
+
+r_packages:
+  - dplyr
+  - rdtLite
+  - provParseR
+  - testthat
+
+notifications:
+  slack: endtoendprovenance:DNYqXZWhV1c3eRhkjGYyjCEv

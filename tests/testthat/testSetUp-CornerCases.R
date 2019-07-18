@@ -41,7 +41,7 @@ test_that("error message is shown when the json file does not exist", {
 	# provenance directory without json file
 	no.json.prov.dir <- get.test.prov.dirs ("prov_HF-data_no-json")
 
-	expect_error(get.prov.info.object(no.json.prov.dir), regexp = paste("prov.json file in the", no.json.prov.dir, "not found\n"))
+	expect_error(get.prov.info.object(no.json.prov.dir), regexp = paste("prov.json file in ", no.json.prov.dir, "is not found\n"))
 })
 
 ########## test checking existence of data frames ##########
@@ -69,9 +69,9 @@ test_that("customly prints out a data frame", {
 	full.df <- data.frame(name = c("A", "B"), value = c(1, 2))
 	expected.full.str <- "\n name value\n    A     1\n    B     2"
 
-	expect_equal(capture_output(print.custom.df(NULL)), "NONE")
-	expect_equal(capture_output(print.custom.df(data.frame())), "NONE")
-	expect_equal(capture_output(print.custom.df(no.row.df)), "NONE")
-	expect_equal(capture_output(print.custom.df(full.df)), expected.full.str)
+	expect_equal(capture_output(display.custom.df(NULL)), "NONE")
+	expect_equal(capture_output(display.custom.df(data.frame())), "NONE")
+	expect_equal(capture_output(display.custom.df(no.row.df)), "NONE")
+	expect_equal(capture_output(display.custom.df(full.df)), expected.full.str)
 })
 
