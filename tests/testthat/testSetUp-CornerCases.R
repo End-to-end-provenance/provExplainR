@@ -69,9 +69,9 @@ test_that("customly prints out a data frame", {
 	full.df <- data.frame(name = c("A", "B"), value = c(1, 2))
 	expected.full.str <- "\n name value\n    A     1\n    B     2"
 
-	expect_equal(capture_output(print.custom.df(NULL)), "NONE")
-	expect_equal(capture_output(print.custom.df(data.frame())), "NONE")
-	expect_equal(capture_output(print.custom.df(no.row.df)), "NONE")
-	expect_equal(capture_output(print.custom.df(full.df)), expected.full.str)
+	expect_equal(capture_output(display.custom.df(NULL)), "NONE")
+	expect_equal(capture_output(display.custom.df(data.frame())), "NONE")
+	expect_equal(capture_output(display.custom.df(no.row.df)), "NONE")
+	expect_equal(capture_output(display.custom.df(full.df)), expected.full.str)
 })
 
