@@ -16,7 +16,7 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 
 	# case: two directories are the same
 	if (olderProv.dir == newerProv.dir){
-		cat (olderProv.dir, "and", newerProv.dir, "are the same directories\n")
+		warning (olderProv.dir, "and", newerProv.dir, "are the same directories\n")
 		return (NA)
 	}
 
@@ -38,6 +38,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	print.environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
 	print.library.changes (provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
 	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
+	print.script.changes (provParseR::get.scripts(older.prov.info), provParseR::get.scripts(newer.prov.info), olderProv.dir, newerProv.dir)
 }
 
 #' print.library.changes gets changes in library by calling a helper
@@ -75,7 +76,12 @@ print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
 #' @noRd
 find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 	# case: input data frame(s) do(es) not exist, stop the function immediately
-	if (check.df.existence("Library", olderProv.lib.df, newerProv.lib.df) == FALSE) {
+	if (FALSE == check.df.existence("Library", olderProv.lib.df, newerProv.lib.df)) {
+		return(NULL)
+	}
+
+	# rare case: no libraries were recorded by provParseR
+	if (FALSE == check.df.empty("library", olderProv.lib.df, newerProv.lib.df)) {
 		return(NULL)
 	}
 
@@ -144,7 +150,12 @@ print.environment.changes <- function(olderProv.env.df, newerProv.env.df) {
 #' @noRd
 find.environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 	# case: input data frame(s) do(es) not exist
-	if (check.df.existence("Environment", olderProv.env.df, newerProv.env.df) == FALSE) {
+	if (FALSE == check.df.existence("Environment", olderProv.env.df, newerProv.env.df)) {
+		return(NULL)
+	}
+
+	# rare case: no environment factors were recorded by provParseR, returns immediately
+	if (FALSE == check.df.empty("environment", olderProv.env.df, newerProv.env.df)) {
 		return(NULL)
 	}
 
@@ -201,13 +212,12 @@ print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 #' @noRd
 find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	# case: input data frame(s) do(es) not exist, returns immediately
-	if (check.df.existence("Provenance tool", olderProv.tool.df, newerProv.tool.df) == FALSE){
+	if (FALSE == check.df.existence("Provenance tool", olderProv.tool.df, newerProv.tool.df)){
 		return (NULL)
 	}
 
 	# rare case: no provenance tools are shown in the data frame, returns immediately
-	if (nrow(olderProv.tool.df) == 0 || nrow(newerProv.tool.df) == 0){
-		warning("no provenance tool was recorded by provParseR\n")
+	if (FALSE == check.df.empty("provenance tool", olderProv.tool.df, newerProv.tool.df)){
 		return(NULL)
 	}
 
@@ -230,6 +240,75 @@ find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	removed.tool.df <- dplyr::anti_join(olderProv.tool.df, newerProv.tool.df, by = "tool.name")
 
 	return (list(same.tool.df, added.tool.df, removed.tool.df))
+}
+
+#' print.script.changes finds the difference between 2 R scripts 
+print.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
+	cat("\n\nSCRIPT CHANGES: ")
+
+	# check the existence of the 2 data frames
+	if(FALSE == check.dir.existence("Script", olderProv.script.df, newerProv.script.df)){
+		cat("\nNA")
+		return(NULL)
+	}
+
+	# rare case : no scripts are recorded in the data frame
+	if(FALSE == check.df.empty("script", olderProv.script.df, newerProv.script.df)){
+		cat("\nNA")
+		return(NULL)
+	}
+
+	script.change.list <- find.script.changes(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir)
+	
+	# # case: if save is false, then show script diff result to the viewer tab
+	# diff.script.obj <- diffobj::diffFile(target = oldProv.script, current = newProv.script, mode = "sidebyside")
+	# if (!save){
+	# 	show(diff.script.obj)
+	# }else{
+	# 	# save the diff object and store the location of the diff object in the text file
+
+	# }
+}
+
+#' Steps:
+#' 1. Access the scripts
+#' 2. Generate the hash value to see if there are any scripts changed 
+#' 3. If there are any changes in the scripts, show them 
+find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
+	# get right paths for copied scripts located in the provenance folders
+	olderProv.script.df <- get.copied.script.path(olderProv.dir, olderProv.script.df)
+	newerProv.script.df <- get.copied.script.path(newerProv.dir, newerProv.script.df)
+
+	# generate hash value for each script in the data frame
+	olderProv.script.df <- compute.script.hash.value(olderProv.script.df)
+	newerProv.script.df <- compute.script.hash.value(newerProv.script.df)
+
+	# 3 cases: same size, scripts added, scripts removed
+}
+
+#' compute.script.hash.value computes hash values for each script
+#' in a given data frame
+#' @param script.df data frame with scripts
+#' @noRd 
+compute.script.hash.value <- function(script.df) {
+	
+}
+
+
+#' get.copied.script.path takes in the path of the provenance directory and
+#' a data frame about the locations of the original scripts, then returns
+#' a data frame with exact locations of the scripts in the provenance directory,
+#' while preserving all columns in the original data frame
+#' @param prov.dir provenance directory
+#' @param origin.script.df original script data frame
+#' @noRd
+get.copied.script.path <- function(prov.dir, origin.script.df) {
+	# extract script names
+	origin.script.df$script <- basename(origin.script.df$script)
+	origin.script.df$script <- sapply(origin.script.df$script, insert.path <- function(script.name){
+		script.name <- paste(prov.dir, "/scripts/", script.name, sep = "")
+	})
+	return(origin.script.df)
 }
 
 #' display.custom.df prints a data frame if nrow is larger than 0
@@ -292,10 +371,20 @@ get.prov.info.object <- function (directory) {
 #' @param df1 first data frame
 #' @param df2 second data frame
 #' @noRd
-check.df.existence <- function (aspect, df1, df2){
+check.df.existence <- function (aspect, df1, df2) {
 	if(is.null(df1) || is.null(df2)){
 		warning (paste(aspect, "data frames returned by provParseR is NULL\n"))
 		return (FALSE)
 	}
 	return (TRUE)
 }
+
+check.df.empty <- function (aspect, df1, df2) {
+	if(nrow(df1) == 0 || nrow(df2) == 0){
+		warning (paste("no", aspect, "was recorded in data frame returned by provParseR\n"))
+		return (FALSE)
+	}
+	return (TRUE)
+}
+
+
