@@ -12,8 +12,9 @@ LazyData: true
 Imports:
     dplyr,
     provParseR (>= 0.1.2),
-    diffobj
+    diffobj, 
     digest
 Suggests: 
     testthat
 RoxygenNote: 6.1.1
+

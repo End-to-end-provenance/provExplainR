@@ -38,7 +38,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	print.environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
 	print.library.changes (provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
 	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
-	print.script.changes (provParseR::get.scripts(older.prov.info), provParseR::get.scripts(newer.prov.info), olderProv.dir, newerProv.dir)
+	# print.script.changes (provParseR::get.scripts(older.prov.info), provParseR::get.scripts(newer.prov.info), olderProv.dir, newerProv.dir)
 }
 
 #' print.library.changes gets changes in library by calling a helper
@@ -155,7 +155,7 @@ find.environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 	}
 
 	# rare case: no environment factors were recorded by provParseR, returns immediately
-	if (FALSE == check.df.empty("environment", olderProv.env.df, newerProv.env.df)) {
+	if (FALSE == check.df.empty("environment factor", olderProv.env.df, newerProv.env.df)) {
 		return(NULL)
 	}
 
@@ -259,21 +259,14 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 	}
 
 	script.change.list <- find.script.changes(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir)
-	
-	# # case: if save is false, then show script diff result to the viewer tab
-	# diff.script.obj <- diffobj::diffFile(target = oldProv.script, current = newProv.script, mode = "sidebyside")
-	# if (!save){
-	# 	show(diff.script.obj)
-	# }else{
-	# 	# save the diff object and store the location of the diff object in the text file
 
-	# }
 }
 
 #' Steps:
 #' 1. Access the scripts
-#' 2. Generate the hash value to see if there are any scripts changed 
-#' 3. If there are any changes in the scripts, show them 
+#' 2. Generate the hash value for each script
+#' 3. compare hash value and return changes in form of a list 
+#' 4. provide a function for users to view diff of 2 scripts 
 find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
 	# get right paths for copied scripts located in the provenance folders
 	olderProv.script.df <- get.copied.script.path(olderProv.dir, olderProv.script.df)
@@ -284,14 +277,20 @@ find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderP
 	newerProv.script.df <- compute.script.hash.value(newerProv.script.df)
 
 	# 3 cases: same size, scripts added, scripts removed
+
 }
 
-#' compute.script.hash.value computes hash values for each script
-#' in a given data frame
+#' compute.script.hash.value generates hash value for each script
+#' and store these values in a new column in the given data frame
 #' @param script.df data frame with scripts
 #' @noRd 
 compute.script.hash.value <- function(script.df) {
-	
+	hash.values.vector <- sapply(script.df$script, FUN = function(X){
+		digest::digest(file = X, algo = "md5")
+	})
+
+	script.df$hashValue <- hash.values.vector
+	return(script.df)
 }
 
 
@@ -323,6 +322,14 @@ display.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
 		print.data.frame(specific.data.frame, row.names = has.row.names)
 	}
 }
+
+#' TODO: display.custom.df.extension prints out result with nicer format 
+# display.custom.df.extension <- function(aspect, specific.data.frame, col.num) {
+# 	cat("\n")
+# 	apply(specific.data.frame, function(item){
+# 		cat (item)
+# 	})
+# }
 
 #' check.dir.existence checks if two given directories exists
 #' and stops the program when the directories are non-existent
@@ -364,7 +371,7 @@ get.prov.info.object <- function (directory) {
 }
 
 #' check.df.existence checks if two given data frames are not null. 
-#' If one or both of them are null, outputs a warning, returns false to 
+#' If one of them are null, outputs a warning, returns false to 
 #' stop the caller of given aspect and continue the program.
 #' Otherwise, returns true 
 #' @param aspect overview of what the data frames are about
@@ -379,6 +386,13 @@ check.df.existence <- function (aspect, df1, df2) {
 	return (TRUE)
 }
 
+#' check.df.empty checks if two given data frames are empty.
+#' If one of them are null, outputs a warning, returns false to
+#' stop the caller of given aspect and continue the program.
+#' Otherwise, returns true
+#' @param aspect overview of what the data frames are about
+#' @param df1 first data frame
+#' @param df2 second data frame
 check.df.empty <- function (aspect, df1, df2) {
 	if(nrow(df1) == 0 || nrow(df2) == 0){
 		warning (paste("no", aspect, "was recorded in data frame returned by provParseR\n"))

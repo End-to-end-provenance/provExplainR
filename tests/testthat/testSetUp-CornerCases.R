@@ -35,13 +35,6 @@ test_that("error message is shown for non-existent directories with correspondin
 		error.prov.dir1, " directory not found\n", sep = ""))
 })
 
-test_that("warning is shown if two directories are the same", {
-	expect_warning(escape.value1 <- prov.explain(olderProv.dir = old.prov.dir, newerProv.dir = old.prov.dir))
-	expect_equal(escape.value1, NA)
-	expect_warning(escape.value2 <- prov.explain(olderProv.dir = new.prov.dir, newerProv.dir = new.prov.dir))
-	expect_equal(escape.value2, NA)
-})
-
 
 ########## test getting the ProvInfo objects ##########
 test_that("error message is shown when the json file does not exist", {
@@ -69,10 +62,20 @@ test_that("warning is shown for non-existent data frames", {
 	expect_true(check.df.existence(aspect = "Environment", df1 = first.df, df2 = second.df))
 })
 
-# ########## test checking if a data frame is empty
-# test_that("warning is shown for empty data frames", {
-	
-# })
+########## test checking if a data frame is empty
+test_that("warning is shown for empty data frames", {
+	first.df <- data.frame(name = c("throw.away"), value = c("throw.away"), stringsAsFactors = FALSE)
+	first.df <- first.df[-1, ]
+	second.df <- data.frame(name = c("greetings"), value = c("hello"), stringsAsFactors = FALSE)
+
+	expect_warning(escape.value1 <- check.df.empty(aspect = "script", df1 = first.df, df2 = second.df),
+		regexp = paste("no script was recorded in data frame returned by provParseR\n"))
+	expect_false(escape.value1)
+	expect_warning(escape.value2 <- check.df.empty(aspect = "environment factor", df1 = second.df, df2 = first.df), 
+		regexp = paste("no environment factor was recorded in data frame returned by provParseR\n"))
+	expect_false(escape.value2)
+	expect_true(check.df.empty(aspect = "library", second.df, second.df))
+})
 
 ########## test customly printing out a data frame ##########
 test_that("customly prints out a data frame", {

@@ -16,7 +16,4 @@ test_that("warning is shown if two directories are the same", {
 	expect_equal(escape.value2, NA)
 })
 
-# test_that("environment variables are correctly set", {
-	
-# })
 
