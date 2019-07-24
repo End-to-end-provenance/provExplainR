@@ -247,7 +247,7 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 	cat("\n\nSCRIPT CHANGES: ")
 
 	# check the existence of the 2 data frames
-	if(FALSE == check.dir.existence("Script", olderProv.script.df, newerProv.script.df)){
+	if(FALSE == check.df.existence("Script", olderProv.script.df, newerProv.script.df)){
 		cat("\nNA")
 		return(NULL)
 	}
@@ -260,7 +260,45 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 
 	script.change.list <- find.script.changes(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir)
 
+	# prints out the result
+	print.main.script.change(script.change.list[1], olderProv.script.df[1, ], newerProv.script.df[1, ])
 }
+
+print.main.script.change <- function(main.script.change.result, olderProv.main.script.df, newerProv.main.script.df){
+	olderProv.main.script.df$script <- basename(olderProv.main.script.df$script)
+	newerProv.main.script.df$script <- basename(newerProv.main.script.df$script)
+
+	renamed <- FALSE
+	# case: script got renamed
+	if(main.script.change.result == 1 || main.script.change.result == 2){
+		cat(paste("\nMain script has been renamed from", olderProv.main.script.df$script, "to", newerProv.main.script.df$script))
+		renamed <- TRUE
+	}
+
+	# case: the content of script changed
+	if(main.script.change.result == 1 || main.script.change.result == 0){
+		msg <- "\nThe content of the main script"
+		# case: if script was not renamed, prints out the name of the script along with the message
+		if(FALSE == renamed){
+			cat(paste(msg, newerProv.main.script.df$script, "has changed"))
+		}else{
+			cat(paste(msg, "has changed"))
+		}
+	}else{ # case: the content is not changed (value 2 or 3)
+		msg <- "\nNo change deteced in main script"
+		# case: if script was not renamed, prints out the name of the script along with the message
+		if(FALSE == renamed){
+			cat(paste(msg, newerProv.main.script.df$script))
+		}else{
+			cat(msg)
+		}
+	}
+
+	# prints out timestamp for each script
+	cat(paste("\nOld script", olderProv.main.script.df$script, "last modified at: ", olderProv.main.script.df$timestamp))
+	cat(paste("\nNew script", newerProv.main.script.df$script, "last modified at: ", newerProv.main.script.df$timestamp))
+}
+
 
 #' Steps:
 #' 1. Access the scripts
@@ -276,9 +314,40 @@ find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderP
 	olderProv.script.df <- compute.script.hash.value(olderProv.script.df)
 	newerProv.script.df <- compute.script.hash.value(newerProv.script.df)
 
-	# 3 cases: same size, scripts added, scripts removed
-
+	#find script changes
+	main.script.change.result <- compare.main.script(olderProv.script.df[1, ], newerProv.script.df[1, ])
+	return (list(main.script.change.result))
 }
+
+compare.main.script <- function(olderProv.main.script.df, newerProv.main.script.df) {
+	olderProv.main.script.df$script <- basename(olderProv.main.script.df$script)
+	newerProv.main.script.df$script <- basename(newerProv.main.script.df$script)
+
+	if(olderProv.main.script.df$hashValue != newerProv.main.script.df$hashValue
+		&& olderProv.main.script.df$script == newerProv.main.script.df$script){
+		return (0)
+	}
+
+	if(olderProv.main.script.df$hashValue != newerProv.main.script.df$hashValue
+		&& olderProv.main.script.df$script != newerProv.main.script.df$script){
+		return (1)
+	}
+
+	if(olderProv.main.script.df$hashValue == newerProv.main.script.df$hashValue
+		&& olderProv.main.script.df$script != newerProv.main.script.df$script){
+		return (2)
+	}
+
+	if(olderProv.main.script.df$hashValue == newerProv.main.script.df$hashValue
+		&& olderProv.main.script.df$script == newerProv.main.script.df$script){
+		return (3)
+	}
+}
+
+# TODO: FUNCTION FOR USERS TO VIEW DIFF BETWEEN TWO SCRIPTS
+# diff.script <- function(first.script, olderProv.dir, newerProv.dir, second.script = NULL) {
+	
+# }
 
 #' compute.script.hash.value generates hash value for each script
 #' and store these values in a new column in the given data frame
