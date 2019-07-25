@@ -38,7 +38,7 @@ detect.changes <- function (olderProv.dir, newerProv.dir){
 	print.environment.changes (provParseR::get.environment(older.prov.info), provParseR::get.environment(newer.prov.info))
 	print.library.changes (provParseR::get.libs(older.prov.info), provParseR::get.libs(newer.prov.info))
 	print.prov.tool.changes (provParseR::get.tool.info(older.prov.info), provParseR::get.tool.info(newer.prov.info))
-	# print.script.changes (provParseR::get.scripts(older.prov.info), provParseR::get.scripts(newer.prov.info), olderProv.dir, newerProv.dir)
+	print.script.changes (provParseR::get.scripts(older.prov.info), provParseR::get.scripts(newer.prov.info), olderProv.dir, newerProv.dir)
 }
 
 #' print.library.changes gets changes in library by calling a helper
@@ -181,7 +181,7 @@ find.environment.changes <- function (olderProv.env.df, newerProv.env.df) {
 #' @param newerProv.tool.df tool data frame for newer provenance 
 #' @noRd
 print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
-	cat ("\n\nPROVENANCE TOOL CHANGES: \n")
+	cat ("\n\nPROVENANCE TOOL CHANGES: ")
 	tool.change.list <- find.prov.tool.changes(olderProv.tool.df, newerProv.tool.df)
 	# if the list returned is null, as.data.frame creates an empty data frame,
 	# so no need to handle null case here
@@ -259,12 +259,15 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 	}
 
 	script.change.list <- find.script.changes(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir)
+	main.script.change.result <- script.change.list[[1]]
+	sourced.script.change.list <- script.change.list[[2]]
 
 	# prints out the result
-	print.main.script.change(script.change.list[1], olderProv.script.df[1, ], newerProv.script.df[1, ])
+	print.main.script.change(main.script.change.result, olderProv.script.df[1, ], newerProv.script.df[1, ])
 }
 
 print.main.script.change <- function(main.script.change.result, olderProv.main.script.df, newerProv.main.script.df){
+	# extract the name of main scripts from a full path 
 	olderProv.main.script.df$script <- basename(olderProv.main.script.df$script)
 	newerProv.main.script.df$script <- basename(newerProv.main.script.df$script)
 
@@ -315,11 +318,22 @@ find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderP
 	newerProv.script.df <- compute.script.hash.value(newerProv.script.df)
 
 	#find script changes
-	main.script.change.result <- compare.main.script(olderProv.script.df[1, ], newerProv.script.df[1, ])
-	return (list(main.script.change.result))
+	main.script.result <- compare.main.script(olderProv.script.df[1, ], newerProv.script.df[1, ])
+	sourced.script.result.list <- compare.sourced.scripts(olderProv.script.df[-1, ], newerProv.script.df[-1, ])
+	return (list(main.script.result, sourced.script.result.list))
 }
 
+#' compare.main.script find changes in the the content and name of main script
+#' The function returns 4 values reprensting 4 status:
+#' 0 = different script, same name
+#' 1 = different script, different name
+#' 2 = same script, different name
+#' 3 = same script, same name 
+#' @param olderProv.main.script.df data frame which contains only old main script
+#' @param newerProv.main.script.df data frame which contains only new main script
+#' @noRd
 compare.main.script <- function(olderProv.main.script.df, newerProv.main.script.df) {
+	# extract the name of main scripts from a full path 
 	olderProv.main.script.df$script <- basename(olderProv.main.script.df$script)
 	newerProv.main.script.df$script <- basename(newerProv.main.script.df$script)
 
@@ -342,6 +356,38 @@ compare.main.script <- function(olderProv.main.script.df, newerProv.main.script.
 		&& olderProv.main.script.df$script == newerProv.main.script.df$script){
 		return (3)
 	}
+}
+
+#' compare.sourced.scripts detects changes in sourced script data frames.
+#' The method returns a list of 4 data frames:
+#' 1. data frame containing scripts with same name
+#' 2. data frame containing renamed scripts with same hash values
+#' 3. data frame containing unidentified scripts in the old prov version
+#' 4. data frame containing unidentified scripts in the new prov version
+#' @param olderProv.sourced.script.df data frame containing only sourced scripts in older prov version
+#' @param newerProv.sourced.script.df data frame containing only sourced scripts in newer prov version
+#' @noRd
+compare.sourced.scripts <- function(olderProv.sourced.script.df, newerProv.sourced.script.df) {
+	# case: no sourced scripts were used in both prov versions
+	if(nrow(olderProv.sourced.script.df) == 0 && nrow(newerProv.sourced.script.df) == 0){
+		return (list(data.frame(), data.frame(), data.frame(), data.frame()))
+	}
+
+	# case: scripts with same name (same or different hash values)
+	same.name.script.df <- dplyr::inner_join(olderProv.sourced.script.df, newerProv.sourced.script.df, by = "script")
+	colnames(same.name.script.df) <- c("script", "old.timestamp", "old.hashValue", "new.timestamp", "new.hashValue")
+
+	# case: scripts with different name but with same hash values (scripts got renamed)
+	different.name.old.script.df <- dplyr::anti_join(olderProv.sourced.script.df, newerProv.sourced.script.df, by = "script")
+	different.name.new.script.df <- dplyr::anti_join(newerProv.sourced.script.df, olderProv.sourced.script.df, by = "script")
+	script.renamed.df <- dplyr::inner_join(different.name.old.script.df, different.name.new.script.df, by = "hashValue")
+	colnames(script.renamed.df) <- c("old.script", "old.timestamp", "hashValue", "new.script", "new.timestamp")
+
+	# case: scripts with different name and different hash values
+	unmatched.old.script.df <- dplyr::anti_join(different.name.old.script.df, different.name.new.script.df, by = "hashValue")
+	unmatched.new.script.df <- dplyr::anti_join(different.name.new.script.df, different.name.old.script.df, by = "hashValue")
+
+	return(list(same.name.script.df, script.renamed.df, unmatched.old.script.df, unmatched.new.script.df))
 }
 
 # TODO: FUNCTION FOR USERS TO VIEW DIFF BETWEEN TWO SCRIPTS
@@ -462,6 +508,7 @@ check.df.existence <- function (aspect, df1, df2) {
 #' @param aspect overview of what the data frames are about
 #' @param df1 first data frame
 #' @param df2 second data frame
+#' @noRd
 check.df.empty <- function (aspect, df1, df2) {
 	if(nrow(df1) == 0 || nrow(df2) == 0){
 		warning (paste("no", aspect, "was recorded in data frame returned by provParseR\n"))

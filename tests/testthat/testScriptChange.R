@@ -28,10 +28,10 @@ expected.script.df <- data.frame(script = c("/Users/khanhl.ngo/HarvardForest/pro
 		timestamp = c("2019-07-22T11.20.52EDT", "2019-07-22T11.18.37EDT"), stringsAsFactors = FALSE)
 
 # case 0: different content, same name
-old.script.case0.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/MainScript.R", "/Users/khanhl.ngo/newProv/SourcedScript1.R"),
+old.script.case0.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/MainScript.R", "/Users/khanhl.ngo/oldProv/SourcedScript1.R"),
 	timestamp = c("2019-07-22T11.20.52EDT", "2019-07-22T11.18.37EDT"),
 	hashValue = c("7be48a56beba80e814c1f57887b3dba1", "e14ab89249763832d467b7d36ce7e6db"), stringsAsFactors = FALSE)
-new.script.case0.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/MainScript.R", "/Users/khanhl.ngo/newProv/SourcedScript1.R"),
+new.script.case0.df <- data.frame(script = c("/Users/khanhl.ngo/newProv/MainScript.R", "/Users/khanhl.ngo/newProv/SourcedScript1.R"),
 	timestamp = c("2019-07-22T12.20.52EDT", "2019-07-22T11.20.37EDT"),
 	hashValue = c("8ce48a56beba80e814c1f57887b3dba1", "d24ab89249763832d467b7d36ce7e6db"), stringsAsFactors = FALSE)
 
@@ -71,5 +71,46 @@ test_that("compares main script and returns corresponding integer values", {
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case2.df[1, ], newerProv.main.script.df = new.script.case2.df[1, ]), 2)
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case3.df[1, ], newerProv.main.script.df = new.script.case3.df[1, ]), 3)
 })
+
+test_that("compare sourced scripts: both old and new data frames are empty", {
+	no.sourced.script <- old.script.case0.df
+	no.sourced.script <- no.sourced.script[-2, ] # remove the only sourced script 
+
+	sourced.script.change.list <- compare.sourced.scripts(no.sourced.script[-1, ], no.sourced.script[-1, ])
+	expect_equal(nrow(sourced.script.change.list[[1]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[2]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[3]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[4]]), 0)
+})
+
+test_that("compare sourced script: old data frame is empty", {
+	no.old.sourced.script <- old.script.case0.df
+	no.old.sourced.script <- no.old.sourced.script[-2, ] # remove the only sourced script
+	expected.unmatched.new.script.df <- data.frame(script = c("/Users/khanhl.ngo/newProv/SourcedScript1.R"), 
+		timestamp = "2019-07-22T11.20.37EDT",
+		hashValue = "d24ab89249763832d467b7d36ce7e6db", stringsAsFactors = FALSE)
+
+	sourced.script.change.list <- compare.sourced.scripts(no.old.sourced.script[-1, ], new.script.case0.df[-1, ])
+	expect_equal(nrow(sourced.script.change.list[[1]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[2]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[3]]), 0)
+	expect_equal(sourced.script.change.list[[4]], expected.unmatched.new.script.df)
+})
+
+test_that("compare sourced script: new data frame is empty", {
+	no.new.sourced.script <- new.script.case0.df
+	no.new.sourced.script <- no.new.sourced.script[-2, ] # remove the only sourced script
+	expected.unmatched.old.script.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/SourcedScript1.R"), 
+		timestamp = "2019-07-22T11.18.37EDT",
+		hashValue = "e14ab89249763832d467b7d36ce7e6db", stringsAsFactors = FALSE)
+
+	sourced.script.change.list <- compare.sourced.scripts(old.script.case0.df[-1, ], no.new.sourced.script[-1, ])
+	expect_equal(nrow(sourced.script.change.list[[1]]), 0)
+	expect_equal(nrow(sourced.script.change.list[[2]]), 0)
+	expect_equal(sourced.script.change.list[[3]], expected.unmatched.old.script.df)
+	expect_equal(nrow(sourced.script.change.list[[4]]), 0)
+})
+
+
 
 
