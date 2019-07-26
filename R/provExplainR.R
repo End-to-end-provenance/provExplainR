@@ -4,8 +4,8 @@
 #' provExplainR takes in two provenance directories, detect changes, and
 #' report to users. Set 'save' parameter to be true to have the results
 #' written in a txt file.
-#' @param olderProv.dir path to the directory that contains older provenance
-#' @param newerProv.dir path to the directory that contains newer provenance
+#' @param olderProv.dir path of older provenance directory
+#' @param newerProv.dir path of newer provenance directory
 #' @param save if true saves the report to the file prov-explain.txt
 #' in the current working directory
 #' @export
@@ -205,7 +205,7 @@ print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	}
 }
 
-#' prov.tool.changes checks the changes in provenance tool:
+#' prov.tool.changes checks for changes in provenance tool:
 #' currently rdt or rdtLite 
 #' @param olderProv.tool.df tool data frame for older provenance
 #' @param newerProv.tool.df tool data frame for newer provenance
@@ -259,13 +259,22 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 	}
 
 	script.change.list <- find.script.changes(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir)
-	main.script.change.result <- script.change.list[[1]]
+	main.script.change.result <- as.double(script.change.list[1])
 	sourced.script.change.list <- script.change.list[[2]]
 
 	# prints out the result
 	print.main.script.change(main.script.change.result, olderProv.script.df[1, ], newerProv.script.df[1, ])
 }
 
+#' print.main.script.change prints out changes in main script
+#' based on the status value returned by compare.main.script method.
+#' The message should display the old and new name if the script got 
+#' renamed, whether the content of the script has changed, and the 
+#' timestamp for each script version
+#' @param main.script.change.result given status value
+#' @param olderProv.main.script.df data frame which contains only old main script
+#' @param newerProv.main.script.df data frame which contains only new main script
+#' @noRd
 print.main.script.change <- function(main.script.change.result, olderProv.main.script.df, newerProv.main.script.df){
 	# extract the name of main scripts from a full path 
 	olderProv.main.script.df$script <- basename(olderProv.main.script.df$script)
@@ -288,7 +297,7 @@ print.main.script.change <- function(main.script.change.result, olderProv.main.s
 			cat(paste(msg, "has changed"))
 		}
 	}else{ # case: the content is not changed (value 2 or 3)
-		msg <- "\nNo change deteced in main script"
+		msg <- "\nNo change detected in main script"
 		# case: if script was not renamed, prints out the name of the script along with the message
 		if(FALSE == renamed){
 			cat(paste(msg, newerProv.main.script.df$script))
@@ -298,16 +307,19 @@ print.main.script.change <- function(main.script.change.result, olderProv.main.s
 	}
 
 	# prints out timestamp for each script
-	cat(paste("\nOld script", olderProv.main.script.df$script, "last modified at: ", olderProv.main.script.df$timestamp))
-	cat(paste("\nNew script", newerProv.main.script.df$script, "last modified at: ", newerProv.main.script.df$timestamp))
+	cat(paste("\nOld script", olderProv.main.script.df$script, "was last modified at:", olderProv.main.script.df$timestamp))
+	cat(paste("\nNew script", newerProv.main.script.df$script, "was last modified at:", newerProv.main.script.df$timestamp))
 }
 
-
-#' Steps:
-#' 1. Access the scripts
-#' 2. Generate the hash value for each script
-#' 3. compare hash value and return changes in form of a list 
-#' 4. provide a function for users to view diff of 2 scripts 
+#' find.script.changes find changes in both main and sourced scripts.
+#' The method calls other helper functions to get full path of each 
+#' script in the provenance directories, generate hash value for each 
+#' script, find changes in main and sourced scripts, then returns a list
+#' containing comparison results of main script and sourced scripts. 
+#' @param olderProv.script.df data frame of old main and sourced scripts
+#' @param newerProv.script.df data frame of new main and sourced scripts
+#' @param olderProv.dir path to older provenance directory
+#' @param newerProv.dir path to newer provenance directory
 find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
 	# get right paths for copied scripts located in the provenance folders
 	olderProv.script.df <- get.copied.script.path(olderProv.dir, olderProv.script.df)
@@ -362,12 +374,18 @@ compare.main.script <- function(olderProv.main.script.df, newerProv.main.script.
 #' The method returns a list of 4 data frames:
 #' 1. data frame containing scripts with same name
 #' 2. data frame containing renamed scripts with same hash values
-#' 3. data frame containing unidentified scripts in the old prov version
-#' 4. data frame containing unidentified scripts in the new prov version
+#' 3. data frame containing unmatched scripts in the old prov version
+#' 4. data frame containing unmatched scripts in the new prov version
+#' Note: this method replaces full script path with script name. In other words,
+#' returned data frames now contain only script name, not full script path
 #' @param olderProv.sourced.script.df data frame containing only sourced scripts in older prov version
 #' @param newerProv.sourced.script.df data frame containing only sourced scripts in newer prov version
 #' @noRd
 compare.sourced.scripts <- function(olderProv.sourced.script.df, newerProv.sourced.script.df) {
+	# extract the names of each script from their full path
+	olderProv.sourced.script.df$script <- basename(olderProv.sourced.script.df$script)
+	newerProv.sourced.script.df$script <- basename(newerProv.sourced.script.df$script)
+
 	# case: no sourced scripts were used in both prov versions
 	if(nrow(olderProv.sourced.script.df) == 0 && nrow(newerProv.sourced.script.df) == 0){
 		return (list(data.frame(), data.frame(), data.frame(), data.frame()))
@@ -380,14 +398,92 @@ compare.sourced.scripts <- function(olderProv.sourced.script.df, newerProv.sourc
 	# case: scripts with different name but with same hash values (scripts got renamed)
 	different.name.old.script.df <- dplyr::anti_join(olderProv.sourced.script.df, newerProv.sourced.script.df, by = "script")
 	different.name.new.script.df <- dplyr::anti_join(newerProv.sourced.script.df, olderProv.sourced.script.df, by = "script")
-	script.renamed.df <- dplyr::inner_join(different.name.old.script.df, different.name.new.script.df, by = "hashValue")
-	colnames(script.renamed.df) <- c("old.script", "old.timestamp", "hashValue", "new.script", "new.timestamp")
+	renamed.script.df <- dplyr::inner_join(different.name.old.script.df, different.name.new.script.df, by = "hashValue")
+	colnames(renamed.script.df) <- c("old.script", "old.timestamp", "hashValue", "new.script", "new.timestamp")
 
 	# case: scripts with different name and different hash values
 	unmatched.old.script.df <- dplyr::anti_join(different.name.old.script.df, different.name.new.script.df, by = "hashValue")
 	unmatched.new.script.df <- dplyr::anti_join(different.name.new.script.df, different.name.old.script.df, by = "hashValue")
 
-	return(list(same.name.script.df, script.renamed.df, unmatched.old.script.df, unmatched.new.script.df))
+	return(list(same.name.script.df, renamed.script.df, unmatched.old.script.df, unmatched.new.script.df))
+}
+
+
+print.same.name.sourced.script <- function(same.name.script.df) {
+	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
+		return("NA")
+	}
+
+	# case: there's nothing in the given script data frame, returns immediately
+	if(nrow(same.name.script.df) == 0) {
+		return("")
+	}
+
+	# extract rows with different hash values
+	modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue != same.name.script.df$new.hashValue)
+	if(nrow(modified.script.df != 0)){
+		for(i in 1:nrow(modified.script.df)){
+			cat(paste("\nSourced script", modified.script.df$script[i], "has changed"))
+		  	cat(paste("\n### Old version", modified.script.df$script[i], "was last modified at:", modified.script.df$old.timestamp[i]))
+		  	cat(paste("\n### New version", modified.script.df$script[i], "was last modified at:", modified.script.df$new.timestamp[i]))
+		}
+	}
+
+	# extract rows with same hash values
+	identical.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue == same.name.script.df$new.hashValue)
+	if(nrow(identical.script.df) != 0){
+		for(i in 1:nrow(identical.script.df)){
+			cat(paste("\nNo change detected in", identical.script.df$script[i]))
+		}
+	}
+}
+
+print.renamed.sourced.script <- function(renamed.script.df) {
+	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
+		return("NA")
+	}
+
+	if(nrow(same.name.script.df) == 0) {
+		return("")
+	}
+}
+
+print.old.unmatched.sourced.script <- function(unmatched.old.script.df) {
+	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
+		return("NA")
+	}
+
+	if(nrow(same.name.script.df) == 0) {
+		return("")
+	}
+}
+
+print.new.unmatched.sourced.script <- function(unmatched.new.script.df) {
+	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
+		return("NA")
+	}
+
+	if(nrow(same.name.script.df) == 0) {
+		return("")
+	}
+}
+
+#' is.valid.script.df is a helper function for script printing functions.
+#' This checks the existence and type of the given script data frame
+#' @param aspect what the script data frame is about
+#' @param script.df the script data frame
+#' @noRd
+is.valid.script.df <- function(aspect, script.df) {
+	if(is.null(script.df)){
+		warning(paste("data frame of", aspect, "is NULL"))
+		return (FALSE)
+	}
+
+	if(FALSE == is.data.frame(script.df)){
+		warning("argument is not a data frame")
+		return (FALSE)
+	}
+	return (TRUE)
 }
 
 # TODO: FUNCTION FOR USERS TO VIEW DIFF BETWEEN TWO SCRIPTS
@@ -396,7 +492,8 @@ compare.sourced.scripts <- function(olderProv.sourced.script.df, newerProv.sourc
 # }
 
 #' compute.script.hash.value generates hash value for each script
-#' and store these values in a new column in the given data frame
+#' based on their path in the provenance directory and store these 
+#' values in a new column in the given data frame
 #' @param script.df data frame with scripts
 #' @noRd 
 compute.script.hash.value <- function(script.df) {
@@ -405,7 +502,7 @@ compute.script.hash.value <- function(script.df) {
 	})
 
 	script.df$hashValue <- hash.values.vector
-	return(script.df)
+	return (script.df)
 }
 
 
@@ -422,7 +519,7 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 	origin.script.df$script <- sapply(origin.script.df$script, insert.path <- function(script.name){
 		script.name <- paste(prov.dir, "/scripts/", script.name, sep = "")
 	})
-	return(origin.script.df)
+	return (origin.script.df)
 }
 
 #' display.custom.df prints a data frame if nrow is larger than 0
@@ -464,7 +561,7 @@ check.dir.existence <- function (dir1, dir2) {
 	if (error.message != "") {
 		stop(error.message)
 	}
-	return(error.message)
+	return (error.message)
 }
 
 #' get.prov.info.object accesses the JSON file from the given directory,
@@ -482,7 +579,7 @@ get.prov.info.object <- function (directory) {
 	}
 
 	# returns the ProvInfo object returned by provParseR
-	return(provParseR::prov.parse(json.file))
+	return (provParseR::prov.parse(json.file))
 }
 
 #' check.df.existence checks if two given data frames are not null. 

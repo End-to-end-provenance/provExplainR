@@ -54,7 +54,7 @@ new.script.case3.df$script[1] = old.script.case3.df$script[1]
 ################################################################################################
 
 test_that("correctly extracts script paths relatively to provenance folders", {
-	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir,origin.script.df = test.origin.scripts.df)
+	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir, origin.script.df = test.origin.scripts.df)
 	expect_equivalent(actual.test.df, expected.script.df)
 })
 
@@ -65,14 +65,38 @@ test_that("correctly computes hash values for each script", {
 	expect_equivalent(actual.script.df, expected.script.df)
 })
 
-test_that("compares main script and returns corresponding integer values", {
+test_that("compares main script and returns corresponding status", {
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case0.df[1, ], newerProv.main.script.df = new.script.case0.df[1, ]), 0)
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case1.df[1, ], newerProv.main.script.df = new.script.case1.df[1, ]), 1)
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case2.df[1, ], newerProv.main.script.df = new.script.case2.df[1, ]), 2)
 	expect_equal(compare.main.script(olderProv.main.script.df = old.script.case3.df[1, ], newerProv.main.script.df = new.script.case3.df[1, ]), 3)
 })
 
-test_that("compare sourced scripts: both old and new data frames are empty", {
+test_that("displays main script changes: case 0 - different content, same name", {
+	actual.message <- capture_output(print.main.script.change(main.script.change.result = 0, olderProv.main.script.df = old.script.case0.df[1, ],newerProv.main.script.df = new.script.case0.df[1, ]))
+	expected.message <- "\nThe content of the main script MainScript.R has changed\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expect_equal(actual.message, expected.message)
+})
+
+test_that("displays main script changes: case 1 - different content, different name", {
+	actual.message <- capture_output(print.main.script.change(main.script.change.result = 1, olderProv.main.script.df = old.script.case1.df[1, ], newerProv.main.script.df = new.script.case1.df[1, ]))
+	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nThe content of the main script has changed\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expect_equal(actual.message, expected.message)
+})
+
+test_that("displays main script changes: case 2 - same content, different name", {
+	actual.message <- capture_output(print.main.script.change(main.script.change.result = 2, olderProv.main.script.df = old.script.case2.df[1, ], newerProv.main.script.df = new.script.case2.df[1, ]))
+	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nNo change detected in main script\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expect_equal(actual.message, expected.message)
+})
+
+test_that("displays main script changes: case 3 - same content, same name", {
+	actual.message <- capture_output(print.main.script.change(main.script.change.result = 3, olderProv.main.script.df = old.script.case3.df[1, ], newerProv.main.script.df = new.script.case3.df[1, ]))
+	expected.message <- "\nNo change detected in main script MainScript.R\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expect_equal(actual.message, expected.message)
+})
+
+test_that("compares sourced scripts: both old and new data frames are empty", {
 	no.sourced.script <- old.script.case0.df
 	no.sourced.script <- no.sourced.script[-2, ] # remove the only sourced script 
 
@@ -83,12 +107,12 @@ test_that("compare sourced scripts: both old and new data frames are empty", {
 	expect_equal(nrow(sourced.script.change.list[[4]]), 0)
 })
 
-test_that("compare sourced script: old data frame is empty", {
+test_that("compares sourced script: old data frame is empty", {
 	no.old.sourced.script <- old.script.case0.df
 	no.old.sourced.script <- no.old.sourced.script[-2, ] # remove the only sourced script
-	expected.unmatched.new.script.df <- data.frame(script = c("/Users/khanhl.ngo/newProv/SourcedScript1.R"), 
-		timestamp = "2019-07-22T11.20.37EDT",
-		hashValue = "d24ab89249763832d467b7d36ce7e6db", stringsAsFactors = FALSE)
+	expected.unmatched.new.script.df <- data.frame(script = c("SourcedScript1.R"), 
+		timestamp = c("2019-07-22T11.20.37EDT"),
+		hashValue = c("d24ab89249763832d467b7d36ce7e6db"), stringsAsFactors = FALSE)
 
 	sourced.script.change.list <- compare.sourced.scripts(no.old.sourced.script[-1, ], new.script.case0.df[-1, ])
 	expect_equal(nrow(sourced.script.change.list[[1]]), 0)
@@ -97,12 +121,12 @@ test_that("compare sourced script: old data frame is empty", {
 	expect_equal(sourced.script.change.list[[4]], expected.unmatched.new.script.df)
 })
 
-test_that("compare sourced script: new data frame is empty", {
+test_that("compares sourced script: new data frame is empty", {
 	no.new.sourced.script <- new.script.case0.df
 	no.new.sourced.script <- no.new.sourced.script[-2, ] # remove the only sourced script
-	expected.unmatched.old.script.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/SourcedScript1.R"), 
-		timestamp = "2019-07-22T11.18.37EDT",
-		hashValue = "e14ab89249763832d467b7d36ce7e6db", stringsAsFactors = FALSE)
+	expected.unmatched.old.script.df <- data.frame(script = c("SourcedScript1.R"), 
+		timestamp = c("2019-07-22T11.18.37EDT"),
+		hashValue = c("e14ab89249763832d467b7d36ce7e6db"), stringsAsFactors = FALSE)
 
 	sourced.script.change.list <- compare.sourced.scripts(old.script.case0.df[-1, ], no.new.sourced.script[-1, ])
 	expect_equal(nrow(sourced.script.change.list[[1]]), 0)
@@ -111,6 +135,73 @@ test_that("compare sourced script: new data frame is empty", {
 	expect_equal(nrow(sourced.script.change.list[[4]]), 0)
 })
 
+test_that("compares sourced script: four cases are non-empty", {
+	multiple.old.sourced.script.df <- old.script.case0.df
+	old.extension.df <- data.frame(script = c("/Users/khanhl.ngo/oldProv/SourcedScript2.R", 
+										"/Users/khanhl.ngo/oldProv/SourcedScript3.R", 
+										"/Users/khanhl.ngo/oldProv/SourcedScript5.R"),
+							timestamp = c("2019-07-22T10.10.37EDT", 
+										"2019-07-22T09.09.37EDT",
+										"2019-07-22T12.00.37EDT"),
+							hashValue = c("a00ab89249763832d467b7d36ce7e6db", 
+										"b01ab89249763832d467b7d36ce7e6db",
+										"c02ab89249763832d467b7d36ce7e6db"), 
+							stringsAsFactors = FALSE)
 
+	multiple.old.sourced.script.df <- rbind(multiple.old.sourced.script.df, old.extension.df)
+
+	multiple.new.sourced.script.df <- new.script.case0.df	
+	new.extension.df <- data.frame(script = c("/Users/khanhl.ngo/newProv/SourcedScript2.R", 
+										"/Users/khanhl.ngo/newProv/SourcedScript4.R", 
+										"/Users/khanhl.ngo/newProv/SourcedScript6.R"),
+							timestamp = c("2019-07-22T12.12.37EDT", 
+										"2019-07-22T13.01.37EDT",
+										"2019-07-22T09.00.37EDT"),
+							hashValue = c("a00ab89249763832d467b7d36ce7e6db", 
+										"b01ab89249763832d467b7d36ce7e6db",
+										"d00ab89249763832d467b7d36ce7e6db"), 
+							stringsAsFactors = FALSE)
+	multiple.new.sourced.script.df <- rbind(multiple.new.sourced.script.df, new.extension.df)
+
+	expected.first.df <- data.frame(script = c("SourcedScript1.R", "SourcedScript2.R"),
+							old.timestamp = c("2019-07-22T11.18.37EDT", "2019-07-22T10.10.37EDT"),
+							old.hashValue = c("e14ab89249763832d467b7d36ce7e6db", "a00ab89249763832d467b7d36ce7e6db"),
+							new.timestamp = c("2019-07-22T11.20.37EDT", "2019-07-22T12.12.37EDT"), 
+							new.hashValue = c("d24ab89249763832d467b7d36ce7e6db", "a00ab89249763832d467b7d36ce7e6db"),
+							stringsAsFactors = FALSE)
+	expected.second.df <- data.frame(old.script = c("SourcedScript3.R"),
+							old.timestamp = c("2019-07-22T09.09.37EDT"),
+							hashValue = c("b01ab89249763832d467b7d36ce7e6db"),
+							new.script = c("SourcedScript4.R"),
+							new.timestamp = c("2019-07-22T13.01.37EDT"),
+							stringsAsFactors = FALSE)
+	expected.third.df <- data.frame(script = c("SourcedScript5.R"),
+							timestamp = c("2019-07-22T12.00.37EDT"),
+							hashValue = c("c02ab89249763832d467b7d36ce7e6db"),
+							stringsAsFactors = FALSE)
+
+	expected.fourth.df <- data.frame(script = c("SourcedScript6.R"),
+							timestamp = c("2019-07-22T09.00.37EDT"),
+							hashValue = c("d00ab89249763832d467b7d36ce7e6db"),
+							stringsAsFactors = FALSE)
+
+	sourced.script.change.list <- compare.sourced.scripts(multiple.old.sourced.script.df[-1, ], multiple.new.sourced.script.df[-1, ])
+	expect_equivalent(sourced.script.change.list[[1]], expected.first.df)
+	expect_equivalent(sourced.script.change.list[[2]], expected.second.df)
+	expect_equivalent(sourced.script.change.list[[3]], expected.third.df)
+	expect_equivalent(sourced.script.change.list[[4]], expected.fourth.df)
+})
+
+test_that("displays sourced scripts: same name", {
+	df <- data.frame(script = c("s1.R", "s2.R", "s3.R"),
+					old.timestamp = c("12", "1", "2"), 
+                 	old.hashValue = c("abc", "cde", "xyz"), 
+                 	new.timestamp = c("12", "2", "4"), 
+                 	new.hashValue = c("abc", "efg", "mno"), 
+                 	stringsAsFactors = FALSE)
+	actual.message <- capture_output(print.same.name.sourced.script(df))
+	expected.message <- "\nSourced script s2.R has changed\n### Old version s2.R was last modified at: 1\n### New version s2.R was last modified at: 2\nSourced script s3.R has changed\n### Old version s3.R was last modified at: 2\n### New version s3.R was last modified at: 4\nNo change detected in s1.R"
+	expect_equal(actual.message, expected.message)
+})
 
 
