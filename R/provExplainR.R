@@ -264,6 +264,10 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 
 	# prints out the result
 	print.main.script.change(main.script.change.result, olderProv.script.df[1, ], newerProv.script.df[1, ])
+	print.same.name.sourced.scripts(same.name.script.df = sourced.script.change.list[1])
+	print.renamed.sourced.scripts(renamed.script.df = sourced.script.change.list[2])
+	print.unmatched.sourced.scripts(status = "old", sourced.script.change.list[3])
+	print.unmatched.sourced.scripts(status = "new", sourced.script.change.list[4])
 }
 
 #' print.main.script.change prints out changes in main script
@@ -320,6 +324,7 @@ print.main.script.change <- function(main.script.change.result, olderProv.main.s
 #' @param newerProv.script.df data frame of new main and sourced scripts
 #' @param olderProv.dir path to older provenance directory
 #' @param newerProv.dir path to newer provenance directory
+#' @noRd
 find.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
 	# get right paths for copied scripts located in the provenance folders
 	olderProv.script.df <- get.copied.script.path(olderProv.dir, olderProv.script.df)
@@ -408,15 +413,19 @@ compare.sourced.scripts <- function(olderProv.sourced.script.df, newerProv.sourc
 	return(list(same.name.script.df, renamed.script.df, unmatched.old.script.df, unmatched.new.script.df))
 }
 
-
-print.same.name.sourced.script <- function(same.name.script.df) {
+#' print.same.name.sourced.scripts takes in a script data frame 
+#' with same names and reports to users if the scripts has changed 
+#' with the corresponding timestamp
+#' @param same.name.script.df a same-name script data frame 
+#' @noRd
+print.same.name.sourced.scripts <- function(same.name.script.df) {
 	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
-		return("NA")
+		return ("\nNA")
 	}
 
 	# case: there's nothing in the given script data frame, returns immediately
 	if(nrow(same.name.script.df) == 0) {
-		return("")
+		return ("")
 	}
 
 	# extract rows with different hash values
@@ -438,33 +447,51 @@ print.same.name.sourced.script <- function(same.name.script.df) {
 	}
 }
 
-print.renamed.sourced.script <- function(renamed.script.df) {
-	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
-		return("NA")
+#' print.renamed.sourced.scripts takes in a data frame 
+#' of renamed scripts and reports changes to users
+#' with the corresponding timestamp
+#' @param renamed.script.df a data frame of renamed scripts
+#' @noRd
+print.renamed.sourced.scripts <- function(renamed.script.df) {
+	if(FALSE == is.valid.script.df("renamed scripts", renamed.script.df)) {
+		return ("\nNA")
 	}
 
-	if(nrow(same.name.script.df) == 0) {
-		return("")
+	if(nrow(renamed.script.df) == 0) {
+		return ("")
+	}
+
+	for(i in 1:nrow(renamed.script.df)) {
+		cat(paste("\nSourced script", renamed.script.df$old.script[i], "has been renamed to", renamed.script.df$new.script[i]))
+		cat(paste("\n### Old version", renamed.script.df$old.script[i], "was last modified at:", renamed.script.df$old.timestamp[i]))
+		cat(paste("\n### New version", renamed.script.df$new.script[i], "was last modified at:", renamed.script.df$new.timestamp[i]))
 	}
 }
 
-print.old.unmatched.sourced.script <- function(unmatched.old.script.df) {
-	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
-		return("NA")
+#' print.unmatched.sourced.scripts takes in a data frame
+#' of unmatched scripts, reports changes to users based on 
+#' the given status (either old or new)
+#' @param status old or new
+#' @param unmatched.script.df data frame of unmatched scripts
+#' @noRd
+print.umatched.sourced.scripts <- function(status, unmatched.script.df) {
+	if(FALSE == is.valid.script.df(aspect = paste(status, "unmatched scripts"), script.df = unmatched.script.df)) {
+		return ("\nNA")
 	}
 
-	if(nrow(same.name.script.df) == 0) {
-		return("")
-	}
-}
-
-print.new.unmatched.sourced.script <- function(unmatched.new.script.df) {
-	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
-		return("NA")
+	if(nrow(unmatched.script.df) == 0) {
+		return ("")
 	}
 
-	if(nrow(same.name.script.df) == 0) {
-		return("")
+	if(status == "old") {
+		result <- "renamed or removed"
+	}else{
+		result <- "renamed or added"
+	}
+
+	for(i in 1:nrow(unmatched.script.df)) {
+		cat(paste("\nSourced script", unmatched.script.df$script[i], "has been", result))
+		cat(paste("\n###", unmatched.script.df$script[i], "was last modified at:", unmatched.script.df$timestamp[i]))
 	}
 }
 
@@ -475,12 +502,12 @@ print.new.unmatched.sourced.script <- function(unmatched.new.script.df) {
 #' @noRd
 is.valid.script.df <- function(aspect, script.df) {
 	if(is.null(script.df)){
-		warning(paste("data frame of", aspect, "is NULL"))
+		warning(paste("data frame of", aspect, "is NULL\n"))
 		return (FALSE)
 	}
 
 	if(FALSE == is.data.frame(script.df)){
-		warning("argument is not a data frame")
+		warning("argument is not a data frame\n")
 		return (FALSE)
 	}
 	return (TRUE)

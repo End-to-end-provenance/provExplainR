@@ -193,15 +193,74 @@ test_that("compares sourced script: four cases are non-empty", {
 })
 
 test_that("displays sourced scripts: same name", {
+	# case: data frame is empty
+	expect_equal(print.same.name.sourced.scripts(data.frame()), "")
+
+	# case: data frame is non-empty
 	df <- data.frame(script = c("s1.R", "s2.R", "s3.R"),
 					old.timestamp = c("12", "1", "2"), 
                  	old.hashValue = c("abc", "cde", "xyz"), 
                  	new.timestamp = c("12", "2", "4"), 
                  	new.hashValue = c("abc", "efg", "mno"), 
                  	stringsAsFactors = FALSE)
-	actual.message <- capture_output(print.same.name.sourced.script(df))
-	expected.message <- "\nSourced script s2.R has changed\n### Old version s2.R was last modified at: 1\n### New version s2.R was last modified at: 2\nSourced script s3.R has changed\n### Old version s3.R was last modified at: 2\n### New version s3.R was last modified at: 4\nNo change detected in s1.R"
+	actual.message <- capture_output(print.same.name.sourced.scripts(df))
+	expected.message <- "\nSourced script s2.R has changed\n### Old version s2.R was last modified at: 1\n### New version s2.R was last modified at: 2"
+	expected.message <- paste(expected.message, "\nSourced script s3.R has changed\n### Old version s3.R was last modified at: 2\n### New version s3.R was last modified at: 4\nNo change detected in s1.R", sep = "")
 	expect_equal(actual.message, expected.message)
+})
+
+test_that("displays sourced scripts: renamed", {
+	# case: data frame is empty
+	expect_equal(print.renamed.sourced.scripts(data.frame()), "")
+
+	# case: data frame is non-empty
+	df <- data.frame(old.script = c("s0.R", "s2.R"), 
+					old.timestamp = c("12", "10"), 
+					hashValue = c("abc", "xyz"),
+					new.script = c("s1.R", "s3.R"),
+					new.timestamp = c("1", "11"),
+					stringsAsFactors = FALSE)
+	actual.message <- capture_output(print.renamed.sourced.scripts(df))
+	expected.message <- "\nSourced script s0.R has been renamed to s1.R\n### Old version s0.R was last modified at: 12\n### New version s1.R was last modified at: 1"
+	expected.message <- paste(expected.message, "\nSourced script s2.R has been renamed to s3.R\n### Old version s2.R was last modified at: 10\n### New version s3.R was last modified at: 11", sep = "")
+	expect_equal(actual.message, expected.message)
+})
+
+test_that("displays sourced scripts: unmatched", {
+	# case: data frame is empty
+	expect_equal(print.umatched.sourced.scripts(status = "old", unmatched.script.df = data.frame()), "")
+
+	df <- data.frame(script = c("s0.R", "s2.R"), 
+					timestamp = c("12", "10"), 
+					hashValue = c("abc", "xyz"),
+					stringsAsFactors = FALSE)
+
+	# case: non-empty old unmatched data frame
+	actual.message1 <- capture_output(print.umatched.sourced.scripts(status = "old", unmatched.script.df = df))
+	expected.message1 <- "\nSourced script s0.R has been renamed or removed\n### s0.R was last modified at: 12"
+	expected.message1 <- paste(expected.message1, "\nSourced script s2.R has been renamed or removed\n### s2.R was last modified at: 10", sep = "")
+	expect_equal(actual.message1, expected.message1)
+
+	# case: non-empty new unmatched data frame
+	actual.message2 <- capture_output(print.umatched.sourced.scripts(status = "new", unmatched.script.df = df))
+	expected.message2 <- "\nSourced script s0.R has been renamed or added\n### s0.R was last modified at: 12"
+	expected.message2 <- paste(expected.message2, "\nSourced script s2.R has been renamed or added\n### s2.R was last modified at: 10", sep = "")
+	expect_equal(actual.message2, expected.message2)
+})
+
+test_that("checks if a script data frame is valid", {
+	expect_warning(escape.value1 <- is.valid.script.df(aspect = "same-name scripts", script.df = NULL),
+		regexp = paste("data frame of same-name scripts is NULL"))
+	expect_equal(escape.value1, FALSE)
+
+	test.df <- data.frame(name = c("hello"), value = c("world"), stringsAsFactors = FALSE)
+	test.list <- list(test.df)
+	expect_equal(typeof(test.list), "list")
+	expect_warning(escape.value2 <- is.valid.script.df(aspect = "same-name scripts", script.df = test.list[1]), 
+		regexp = paste("argument is not a data frame\n"))
+	expect_equal(escape.value2, FALSE)
+
+	expect_equal(is.valid.script.df(aspect = "same-name scripts", script.df = test.df), TRUE)
 })
 
 
