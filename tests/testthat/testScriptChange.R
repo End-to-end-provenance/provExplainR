@@ -63,6 +63,7 @@ new.script.case3.df$script[1] = old.script.case3.df$script[1]
 # })
 
 test_that("correctly computes hash values for each script", {
+	skip_on_travis()
 	actual.script.df <- expected.script.df
 	expected.script.df$hashValue <- c("7be48a56beba80e814c1f57887b3dba1", "d24ab89249763832d467b7d36ce7e6db")
 	actual.script.df <- compute.script.hash.value(script.df = actual.script.df)

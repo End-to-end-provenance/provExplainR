@@ -27,10 +27,10 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 #' two scripts. Users must specify name of the first script, 
 #' old provenance directory path and new provenance directory 
 #' path. Name of second script is optional. If second script 
-#' is specified, provExplainR assumes first script locates in the 
-#' old provenance folder and second script locates in 
+#' is specified, provExplainR assumes first script is located in the 
+#' old provenance folder and second script is located in 
 #' the new provenance folder. Otherwise, provExplainR assumes 
-#' both provenance folders share same script name.
+#' both scripts share the same name.
 #' @param first.script name of first script 
 #' @param olderProv.dir path of older provenance directory
 #' @param newerProv.dir path of newer provenance directory
@@ -40,7 +40,7 @@ prov.diff.script <- function(first.script, olderProv.dir, newerProv.dir, second.
 	# check the existence of two given directories
 	check.dir.existence(olderProv.dir, newerProv.dir)
 
-	# extract script name and get right full paths of each script
+	# extract script name and change paths to scripts saved in prov folders
 	first.script <- basename(first.script)
 	old.script <- paste(olderProv.dir, "/scripts/", first.script, sep = "")
 	if(!is.null(second.script)){
@@ -316,7 +316,7 @@ find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 }
 
 #' print.script.changes finds the difference between 2 R scripts 
-#' and call other helper printing functions to display the change results
+#' and calls other helper printing functions to display the changes
 #' @param olderProv.script.df script data frame for older provenance
 #' @param newerProv.script.df script data frame for newer provenance
 #' @param olderProv.dir path to directory that contains older provenance
