@@ -9,10 +9,9 @@
 #' @param save if true saves the report to the file prov-explain.txt
 #' in the current working directory
 #' @export
-#' @rdname explain
 prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 	# check the existence of two given directories
-	check.dir.existence (olderProv.dir, newerProv.dir)
+	check.dir.existence(olderProv.dir, newerProv.dir)
 
 	# case: two directories are the same
 	if (olderProv.dir == newerProv.dir){
@@ -22,6 +21,46 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 
 	# check for changes
 	detect.changes (olderProv.dir, newerProv.dir)
+}
+
+#' prov.diff.script visualizes the difference between the content of
+#' two scripts. Users must specify name of the first script, 
+#' old provenance directory path and new provenance directory 
+#' path. Name of second script is optional. If second script 
+#' is specified, provExplainR assumes first script locates in the 
+#' old provenance folder and second script locates in 
+#' the new provenance folder. Otherwise, provExplainR assumes 
+#' both provenance folders share same script name.
+#' @param first.script name of first script 
+#' @param olderProv.dir path of older provenance directory
+#' @param newerProv.dir path of newer provenance directory
+#' @param second.script name of second script 
+#' @export
+prov.diff.script <- function(first.script, olderProv.dir, newerProv.dir, second.script = NULL) {
+	# check the existence of two given directories
+	check.dir.existence(olderProv.dir, newerProv.dir)
+
+	# extract script name and get right full paths of each script
+	first.script <- basename(first.script)
+	old.script <- paste(olderProv.dir, "/scripts/", first.script, sep = "")
+	if(!is.null(second.script)){
+		second.script <- basename(second.script)
+		new.script <- paste(newerProv.dir, "/scripts/", second.script, sep = "")
+	}else{
+		new.script <- paste(newerProv.dir, "/scripts/", first.script, sep = "")
+	}
+
+	# check existence of 2 scripts 
+	if(!file.exists(old.script)){
+		stop(paste(first.script, "not found in the given provenance folder\n"))
+	}
+
+	if(!file.exists(new.script)){
+		stop(paste(new.script), "not found in the given provenance folder\n")
+	}
+
+	# show the diff
+	diffobj::diffFile(target = old.script, current = new.script, mode = "sidebyside")
 }
 
 #' detect.changes gets ProvInfo objects from provParseR
@@ -277,6 +316,12 @@ find.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 }
 
 #' print.script.changes finds the difference between 2 R scripts 
+#' and call other helper printing functions to display the change results
+#' @param olderProv.script.df script data frame for older provenance
+#' @param newerProv.script.df script data frame for newer provenance
+#' @param olderProv.dir path to directory that contains older provenance
+#' @param newerProv.dir path to directory that contains newer provenance
+#' @noRd
 print.script.changes <- function(olderProv.script.df, newerProv.script.df, olderProv.dir, newerProv.dir) {
 	cat("\n\nSCRIPT CHANGES: ")
 
@@ -547,11 +592,6 @@ is.valid.script.df <- function(aspect, script.df) {
 	}
 	return (TRUE)
 }
-
-# TODO: FUNCTION FOR USERS TO VIEW DIFF BETWEEN TWO SCRIPTS
-# diff.script <- function(first.script, olderProv.dir, newerProv.dir, second.script = NULL) {
-	
-# }
 
 #' compute.script.hash.value generates hash value for each script
 #' based on their path in the provenance directory and store these 

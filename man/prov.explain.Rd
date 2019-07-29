@@ -7,9 +7,9 @@
 prov.explain(olderProv.dir, newerProv.dir, save = FALSE)
 }
 \arguments{
-\item{olderProv.dir}{path to the directory that contains older provenance}
+\item{olderProv.dir}{path of older provenance directory}
 
-\item{newerProv.dir}{path to the directory that contains newer provenance}
+\item{newerProv.dir}{path of newer provenance directory}
 
 \item{save}{if true saves the report to the file prov-explain.txt
 in the current working directory}
