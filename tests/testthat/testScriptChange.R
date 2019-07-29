@@ -1,3 +1,7 @@
+#' This test file tests behavior of all functions related to detecting 
+#' script changes based on the collected provenance.
+#' @author Khanh Ngo
+
 library(provExplainR)
 library(testthat)
 
@@ -74,25 +78,25 @@ test_that("compares main script and returns corresponding status", {
 
 test_that("displays main script changes: case 0 - different content, same name", {
 	actual.message <- capture_output(print.main.script.change(main.script.change.result = 0, olderProv.main.script.df = old.script.case0.df[1, ],newerProv.main.script.df = new.script.case0.df[1, ]))
-	expected.message <- "\nThe content of the main script MainScript.R has changed\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expected.message <- "\nThe content of the main script MainScript.R has changed\n### Old script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### New script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 1 - different content, different name", {
 	actual.message <- capture_output(print.main.script.change(main.script.change.result = 1, olderProv.main.script.df = old.script.case1.df[1, ], newerProv.main.script.df = new.script.case1.df[1, ]))
-	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nThe content of the main script has changed\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nThe content of the main script has changed\n### Old script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### New script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 2 - same content, different name", {
 	actual.message <- capture_output(print.main.script.change(main.script.change.result = 2, olderProv.main.script.df = old.script.case2.df[1, ], newerProv.main.script.df = new.script.case2.df[1, ]))
-	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nNo change detected in main script\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expected.message <- "\nMain script has been renamed from MainScript.R to MainRenamedScript.R\nNo change detected in main script\n### Old script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### New script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 3 - same content, same name", {
 	actual.message <- capture_output(print.main.script.change(main.script.change.result = 3, olderProv.main.script.df = old.script.case3.df[1, ], newerProv.main.script.df = new.script.case3.df[1, ]))
-	expected.message <- "\nNo change detected in main script MainScript.R\nOld script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\nNew script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	expected.message <- "\nNo change detected in main script MainScript.R\n### Old script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### New script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
 	expect_equal(actual.message, expected.message)
 })
 
@@ -193,9 +197,6 @@ test_that("compares sourced script: four cases are non-empty", {
 })
 
 test_that("displays sourced scripts: same name", {
-	# case: data frame is empty
-	expect_equal(print.same.name.sourced.scripts(data.frame()), "")
-
 	# case: data frame is non-empty
 	df <- data.frame(script = c("s1.R", "s2.R", "s3.R"),
 					old.timestamp = c("12", "1", "2"), 
@@ -210,9 +211,6 @@ test_that("displays sourced scripts: same name", {
 })
 
 test_that("displays sourced scripts: renamed", {
-	# case: data frame is empty
-	expect_equal(print.renamed.sourced.scripts(data.frame()), "")
-
 	# case: data frame is non-empty
 	df <- data.frame(old.script = c("s0.R", "s2.R"), 
 					old.timestamp = c("12", "10"), 
@@ -227,22 +225,19 @@ test_that("displays sourced scripts: renamed", {
 })
 
 test_that("displays sourced scripts: unmatched", {
-	# case: data frame is empty
-	expect_equal(print.umatched.sourced.scripts(status = "old", unmatched.script.df = data.frame()), "")
-
 	df <- data.frame(script = c("s0.R", "s2.R"), 
 					timestamp = c("12", "10"), 
 					hashValue = c("abc", "xyz"),
 					stringsAsFactors = FALSE)
 
 	# case: non-empty old unmatched data frame
-	actual.message1 <- capture_output(print.umatched.sourced.scripts(status = "old", unmatched.script.df = df))
+	actual.message1 <- capture_output(print.unmatched.sourced.scripts(status = "old", unmatched.script.df = df))
 	expected.message1 <- "\nSourced script s0.R has been renamed or removed\n### s0.R was last modified at: 12"
 	expected.message1 <- paste(expected.message1, "\nSourced script s2.R has been renamed or removed\n### s2.R was last modified at: 10", sep = "")
 	expect_equal(actual.message1, expected.message1)
 
 	# case: non-empty new unmatched data frame
-	actual.message2 <- capture_output(print.umatched.sourced.scripts(status = "new", unmatched.script.df = df))
+	actual.message2 <- capture_output(print.unmatched.sourced.scripts(status = "new", unmatched.script.df = df))
 	expected.message2 <- "\nSourced script s0.R has been renamed or added\n### s0.R was last modified at: 12"
 	expected.message2 <- paste(expected.message2, "\nSourced script s2.R has been renamed or added\n### s2.R was last modified at: 10", sep = "")
 	expect_equal(actual.message2, expected.message2)
@@ -257,7 +252,7 @@ test_that("checks if a script data frame is valid", {
 	test.list <- list(test.df)
 	expect_equal(typeof(test.list), "list")
 	expect_warning(escape.value2 <- is.valid.script.df(aspect = "same-name scripts", script.df = test.list[1]), 
-		regexp = paste("argument is not a data frame\n"))
+		regexp = paste("argument is not a data frame, aspect = same-name scripts\n"))
 	expect_equal(escape.value2, FALSE)
 
 	expect_equal(is.valid.script.df(aspect = "same-name scripts", script.df = test.df), TRUE)

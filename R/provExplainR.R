@@ -264,10 +264,10 @@ print.script.changes <- function(olderProv.script.df, newerProv.script.df, older
 
 	# prints out the result
 	print.main.script.change(main.script.change.result, olderProv.script.df[1, ], newerProv.script.df[1, ])
-	print.same.name.sourced.scripts(same.name.script.df = sourced.script.change.list[1])
-	print.renamed.sourced.scripts(renamed.script.df = sourced.script.change.list[2])
-	print.unmatched.sourced.scripts(status = "old", sourced.script.change.list[3])
-	print.unmatched.sourced.scripts(status = "new", sourced.script.change.list[4])
+	print.same.name.sourced.scripts(same.name.script.df = sourced.script.change.list[[1]])
+	print.renamed.sourced.scripts(renamed.script.df = sourced.script.change.list[[2]])
+	print.unmatched.sourced.scripts(status = "old", sourced.script.change.list[[3]])
+	print.unmatched.sourced.scripts(status = "new", sourced.script.change.list[[4]])
 }
 
 #' print.main.script.change prints out changes in main script
@@ -311,8 +311,13 @@ print.main.script.change <- function(main.script.change.result, olderProv.main.s
 	}
 
 	# prints out timestamp for each script
-	cat(paste("\nOld script", olderProv.main.script.df$script, "was last modified at:", olderProv.main.script.df$timestamp))
-	cat(paste("\nNew script", newerProv.main.script.df$script, "was last modified at:", newerProv.main.script.df$timestamp))
+	if(olderProv.main.script.df$timestamp == newerProv.main.script.df$timestamp){
+		# case: timestamp of two script versions is the same
+		cat(paste("\n### Main script"), newerProv.main.script.df$script, "was last modified at:", newerProv.main.script.df$timestamp)
+	}else{
+		cat(paste("\n### Old script", olderProv.main.script.df$script, "was last modified at:", olderProv.main.script.df$timestamp))
+		cat(paste("\n### New script", newerProv.main.script.df$script, "was last modified at:", newerProv.main.script.df$timestamp))
+	}
 }
 
 #' find.script.changes find changes in both main and sourced scripts.
@@ -423,26 +428,24 @@ print.same.name.sourced.scripts <- function(same.name.script.df) {
 		return ("\nNA")
 	}
 
-	# case: there's nothing in the given script data frame, returns immediately
-	if(nrow(same.name.script.df) == 0) {
-		return ("")
-	}
-
-	# extract rows with different hash values
-	modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue != same.name.script.df$new.hashValue)
-	if(nrow(modified.script.df != 0)){
-		for(i in 1:nrow(modified.script.df)){
-			cat(paste("\nSourced script", modified.script.df$script[i], "has changed"))
-		  	cat(paste("\n### Old version", modified.script.df$script[i], "was last modified at:", modified.script.df$old.timestamp[i]))
-		  	cat(paste("\n### New version", modified.script.df$script[i], "was last modified at:", modified.script.df$new.timestamp[i]))
+	# case: data frame must be non-empty
+	if(nrow(same.name.script.df) != 0) {
+		# extract rows with different hash values
+		modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue != same.name.script.df$new.hashValue)
+		if(nrow(modified.script.df != 0)){
+			for(i in 1:nrow(modified.script.df)){
+				cat(paste("\nSourced script", modified.script.df$script[i], "has changed"))
+			  	cat(paste("\n### Old version", modified.script.df$script[i], "was last modified at:", modified.script.df$old.timestamp[i]))
+			  	cat(paste("\n### New version", modified.script.df$script[i], "was last modified at:", modified.script.df$new.timestamp[i]))
+			}
 		}
-	}
 
-	# extract rows with same hash values
-	identical.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue == same.name.script.df$new.hashValue)
-	if(nrow(identical.script.df) != 0){
-		for(i in 1:nrow(identical.script.df)){
-			cat(paste("\nNo change detected in", identical.script.df$script[i]))
+		# extract rows with same hash values
+		identical.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue == same.name.script.df$new.hashValue)
+		if(nrow(identical.script.df) != 0){
+			for(i in 1:nrow(identical.script.df)){
+				cat(paste("\nNo change detected in", identical.script.df$script[i]))
+			}
 		}
 	}
 }
@@ -457,14 +460,13 @@ print.renamed.sourced.scripts <- function(renamed.script.df) {
 		return ("\nNA")
 	}
 
-	if(nrow(renamed.script.df) == 0) {
-		return ("")
-	}
-
-	for(i in 1:nrow(renamed.script.df)) {
-		cat(paste("\nSourced script", renamed.script.df$old.script[i], "has been renamed to", renamed.script.df$new.script[i]))
-		cat(paste("\n### Old version", renamed.script.df$old.script[i], "was last modified at:", renamed.script.df$old.timestamp[i]))
-		cat(paste("\n### New version", renamed.script.df$new.script[i], "was last modified at:", renamed.script.df$new.timestamp[i]))
+	# case : data frame must be non-empty 
+	if(nrow(renamed.script.df) != 0) {
+		for(i in 1:nrow(renamed.script.df)) {
+			cat(paste("\nSourced script", renamed.script.df$old.script[i], "has been renamed to", renamed.script.df$new.script[i]))
+			cat(paste("\n### Old version", renamed.script.df$old.script[i], "was last modified at:", renamed.script.df$old.timestamp[i]))
+			cat(paste("\n### New version", renamed.script.df$new.script[i], "was last modified at:", renamed.script.df$new.timestamp[i]))
+		}
 	}
 }
 
@@ -474,24 +476,23 @@ print.renamed.sourced.scripts <- function(renamed.script.df) {
 #' @param status old or new
 #' @param unmatched.script.df data frame of unmatched scripts
 #' @noRd
-print.umatched.sourced.scripts <- function(status, unmatched.script.df) {
+print.unmatched.sourced.scripts <- function(status, unmatched.script.df) {
 	if(FALSE == is.valid.script.df(aspect = paste(status, "unmatched scripts"), script.df = unmatched.script.df)) {
 		return ("\nNA")
 	}
 
-	if(nrow(unmatched.script.df) == 0) {
-		return ("")
-	}
+	# case: data frame must be non-empty
+	if(nrow(unmatched.script.df) != 0) {
+		if(status == "old") {
+			result <- "renamed or removed"
+		}else{
+			result <- "renamed or added"
+		}
 
-	if(status == "old") {
-		result <- "renamed or removed"
-	}else{
-		result <- "renamed or added"
-	}
-
-	for(i in 1:nrow(unmatched.script.df)) {
-		cat(paste("\nSourced script", unmatched.script.df$script[i], "has been", result))
-		cat(paste("\n###", unmatched.script.df$script[i], "was last modified at:", unmatched.script.df$timestamp[i]))
+		for(i in 1:nrow(unmatched.script.df)) {
+			cat(paste("\nSourced script", unmatched.script.df$script[i], "has been", result))
+			cat(paste("\n###", unmatched.script.df$script[i], "was last modified at:", unmatched.script.df$timestamp[i]))
+		}
 	}
 }
 
@@ -507,7 +508,7 @@ is.valid.script.df <- function(aspect, script.df) {
 	}
 
 	if(FALSE == is.data.frame(script.df)){
-		warning("argument is not a data frame\n")
+		warning(paste("argument is not a data frame, aspect = ", aspect, "\n", sep = ""))
 		return (FALSE)
 	}
 	return (TRUE)

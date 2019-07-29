@@ -1,3 +1,6 @@
+#' This test file tests behavior of main function of the whole tool.
+#' @author Khanh Ngo
+
 library(provExplainR)
 library(testthat)
 

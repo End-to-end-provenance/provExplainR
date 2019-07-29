@@ -2,8 +2,7 @@
 #' cases in provExplainR.R, which includes checking the existence of 
 #' directories, data frames, getting ProvInfo object from provParseR, etc.
 #' @author Khanh Ngo
-#' @version 7/9/19
-#' 
+ 
 library(provExplainR)
 library(testthat)
 

@@ -1,3 +1,6 @@
+#' init tests for other tests to use
+#' @author Khanh Ngo
+
 get.test.prov.dirs <- function (dir.name) {
 	return (system.file("testdata", dir.name, package = "provExplainR"))	
 }
