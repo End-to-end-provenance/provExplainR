@@ -57,10 +57,10 @@ new.script.case3.df$script[1] = old.script.case3.df$script[1]
 # FINISH PREPARING TEST DATA
 ################################################################################################
 
-test_that("correctly extracts script paths relatively to provenance folders", {
-	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir, origin.script.df = test.origin.scripts.df)
-	expect_equivalent(actual.test.df, expected.script.df)
-})
+# test_that("correctly extracts script paths relatively to provenance folders", {
+# 	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir, origin.script.df = test.origin.scripts.df)
+# 	expect_equivalent(actual.test.df, expected.script.df)
+# })
 
 test_that("correctly computes hash values for each script", {
 	actual.script.df <- expected.script.df
@@ -206,7 +206,7 @@ test_that("displays sourced scripts: same name", {
                  	stringsAsFactors = FALSE)
 	actual.message <- capture_output(print.same.name.sourced.scripts(df))
 	expected.message <- "\nSourced script s2.R has changed\n### Old version s2.R was last modified at: 1\n### New version s2.R was last modified at: 2"
-	expected.message <- paste(expected.message, "\nSourced script s3.R has changed\n### Old version s3.R was last modified at: 2\n### New version s3.R was last modified at: 4\nNo change detected in s1.R", sep = "")
+	expected.message <- paste(expected.message, "\nSourced script s3.R has changed\n### Old version s3.R was last modified at: 2\n### New version s3.R was last modified at: 4\nNo change detected in sourced script s1.R", sep = "")
 	expect_equal(actual.message, expected.message)
 })
 

@@ -76,16 +76,3 @@ test_that("warning is shown for empty data frames", {
 	expect_true(check.df.empty(aspect = "library", second.df, second.df))
 })
 
-########## test customly printing out a data frame ##########
-test_that("customly prints out a data frame", {
-	no.row.df <- data.frame(name = c("throw.away"), value = c("throw.away"))
-	no.row.df <- no.row.df[-1, ]
-	full.df <- data.frame(name = c("A", "B"), value = c(1, 2))
-	expected.full.str <- "\n name value\n    A     1\n    B     2"
-
-	expect_equal(capture_output(display.custom.df(NULL)), "NONE")
-	expect_equal(capture_output(display.custom.df(data.frame())), "NONE")
-	expect_equal(capture_output(display.custom.df(no.row.df)), "NONE")
-	expect_equal(capture_output(display.custom.df(full.df)), expected.full.str)
-})
-

@@ -54,23 +54,35 @@ print.library.changes <- function (olderProv.lib.df, newerProv.lib.df){
 	# if list is null, R returns empty (non-NULL) data frames
 	lib.updates.df <- as.data.frame(lib.change.list[1])
 	lib.add.df <- as.data.frame(lib.change.list[2])
-	lib.remove.df <- as.data.frame(lib.change.list[3])
+	lib.unloaded.df <- as.data.frame(lib.change.list[3])
 
-	cat ("\nLibrary updates: ")
-	display.custom.df(lib.updates.df)
+	cat ("\nLibrary updates:\n")
+	if(nrow(lib.updates.df) == 0){
+		cat("No updates have been detected")
+	}else{
+		print.data.frame(lib.updates.df, row.names = FALSE)
+	}
 
-	cat ("\nLibraries added: ")
-	display.custom.df(lib.add.df)
+	cat ("\n\nLibraries added:\n")
+	if(nrow(lib.add.df) == 0){
+		cat("No libraries have been added")
+	}else{
+		print.data.frame(lib.add.df, row.names = FALSE)
+	}
 
-	cat ("\nLibraries removed: ")
-	display.custom.df(lib.remove.df)
+	cat ("\n\nLibraries unloaded:\n")
+	if(nrow(lib.unloaded.df) == 0){
+		cat("No libraries have been unloaded")
+	}else{
+		print.data.frame(lib.unloaded.df, row.names = FALSE)
+	}
 }
 
 
 #' find.library.changes detects changes in libraries used based on the 
 #' collected provenance from two provenance folders.
 #' The method returns a list of 3 data frames: library version updates,
-#' added libraries, removed libraries
+#' added libraries, unloaded libraries
 #' @param olderProv.lib.df library data frame for older provenance
 #' @param newerProv.lib.df library data frame for newer provenance
 #' @noRd
@@ -102,11 +114,11 @@ find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 	# get rows in 2nd df but not in 1st df
 	added.lib.df <- dplyr::anti_join(newerProv.lib.df, olderProv.lib.df, by = "name")
 
-	# find libraries removed
+	# find libraries unloaded
 	# get rows in 1st df but not in 2nd df
-	removed.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
+	unloaded.lib.df <- dplyr::anti_join(olderProv.lib.df, newerProv.lib.df, by = "name")
 
-	return (list(lib.updates.df, added.lib.df, removed.lib.df))
+	return (list(lib.updates.df, added.lib.df, unloaded.lib.df))
 }
 
 #' print.environment.changes gets environment changes by calling
@@ -115,28 +127,39 @@ find.library.changes <- function (olderProv.lib.df, newerProv.lib.df) {
 #' @param newerProv.env.df environment data frame for newer provenance
 #' @noRd
 print.environment.changes <- function(olderProv.env.df, newerProv.env.df) {
-	cat ("\n\nENVIRONMENT CHANGES: ")
+	cat ("\nENVIRONMENT CHANGES: ")
 	env.change.list <- find.environment.changes(olderProv.env.df, newerProv.env.df)
 
+	# as.data.frame returns an empty data frame if the given data frame is null
+	# so no need to handle null case here
 	env.updates.df <- as.data.frame(env.change.list[1])
 	env.added.df <- as.data.frame(env.change.list[2])
 	env.removed.df <- as.data.frame(env.change.list[3])
 
-	cat("\nEnvironment updates: ") 
-	display.custom.df(env.updates.df)
+	cat("\nEnvironment updates:") 
+	# prints out the update 
+	if(nrow(env.updates.df) == 0){
+		cat("\nNo updates have been detected")
+	}else{
+		for(i in 1:nrow(env.updates.df)){
+			cat(paste("\nEnvironment factor:", env.updates.df$label[i]))
+			cat(paste("\n### Old value:", env.updates.df$old.value[i]))
+			cat(paste("\n### New value:", env.updates.df$new.value[i]))
+		}
+	}
 
 	# rare case: a new environment factor has been added,
 	# only prints out when found such factor
-	if(!is.null(env.added.df) && nrow(env.added.df) != 0){
-		cat("\nNew environment factors added: ")
-		display.custom.df(env.added.df)
+	if(nrow(env.added.df) != 0){
+		cat("\n\nNew environment factors added:\n")
+		print.data.frame(env.added.df, row.names = FALSE)
 	}
 
 	# rare case: an environment factor has been removed,
 	# only prints out when found such factor
-	if(!is.null(env.removed.df) && nrow(env.removed.df) != 0){
-		cat("\nRemoved environment factor: ")
-		display.custom.df(env.removed.df)
+	if(nrow(env.removed.df) != 0){
+		cat("\n\nRemoved environment factor:\n")
+		print.data.frame(env.removed.df, row.names = FALSE)
 	}
 }
 
@@ -190,17 +213,28 @@ print.prov.tool.changes <- function (olderProv.tool.df, newerProv.tool.df) {
 	removed.tool.df <- as.data.frame(tool.change.list[3])
 
 	cat("\nTool updates: ")
-	display.custom.df(update.tool.df)
+	# prints out the update 
+	if(nrow(update.tool.df) == 0){
+		cat("\nNo updates have been detected")
+	}else{
+		for(i in 1:nrow(update.tool.df)){
+			cat(paste("\nTool name:", update.tool.df$tool.name[i]))
+			cat(paste("\n### Old tool version:", update.tool.df$old.tool.version[i], 
+				"; old json version:", update.tool.df$old.json.version[i]))
+			cat(paste("\n### New tool version:", update.tool.df$new.tool.version[i], 
+				"; new json version:", update.tool.df$new.json.version[i]))
+		}
+	}
 
 	# since this case is rare, only prints out when found a new tool
-	if (!is.null(added.tool.df) && nrow(added.tool.df) != 0){
-		cat ("\nNew provenance tool: \n")
+	if (nrow(added.tool.df) != 0){
+		cat ("\n\nNew provenance tool:\n")
 		print.data.frame(added.tool.df, row.names = FALSE)
 	}
 
 	# since this case is rare, only prints out when found a removed tool 
-	if (!is.null(removed.tool.df) && nrow(removed.tool.df) != 0){
-		cat("\nRemoved provenance tool: \n")
+	if (nrow(removed.tool.df) != 0){
+		cat("\n\nRemoved provenance tool:\n")
 		print.data.frame(removed.tool.df, row.names = FALSE)
 	}
 }
@@ -432,7 +466,7 @@ print.same.name.sourced.scripts <- function(same.name.script.df) {
 	if(nrow(same.name.script.df) != 0) {
 		# extract rows with different hash values
 		modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue != same.name.script.df$new.hashValue)
-		if(nrow(modified.script.df != 0)){
+		if(nrow(modified.script.df) != 0){
 			for(i in 1:nrow(modified.script.df)){
 				cat(paste("\nSourced script", modified.script.df$script[i], "has changed"))
 			  	cat(paste("\n### Old version", modified.script.df$script[i], "was last modified at:", modified.script.df$old.timestamp[i]))
@@ -444,7 +478,7 @@ print.same.name.sourced.scripts <- function(same.name.script.df) {
 		identical.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$old.hashValue == same.name.script.df$new.hashValue)
 		if(nrow(identical.script.df) != 0){
 			for(i in 1:nrow(identical.script.df)){
-				cat(paste("\nNo change detected in", identical.script.df$script[i]))
+				cat(paste("\nNo change detected in sourced script", identical.script.df$script[i]))
 			}
 		}
 	}
@@ -549,27 +583,6 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 	})
 	return (origin.script.df)
 }
-
-#' display.custom.df prints a data frame if nrow is larger than 0
-#' @param specific.data.frame data frame to be printed out
-#' @param has.row.names logical value to include row names or not
-#' @noRd
-display.custom.df <- function (specific.data.frame, has.row.names = FALSE) {
-	if(is.null(specific.data.frame) || nrow(specific.data.frame) == 0){
-		cat ("NONE\n")
-	}else{
-		cat ("\n")
-		print.data.frame(specific.data.frame, row.names = has.row.names)
-	}
-}
-
-#' TODO: display.custom.df.extension prints out result with nicer format 
-# display.custom.df.extension <- function(aspect, specific.data.frame, col.num) {
-# 	cat("\n")
-# 	apply(specific.data.frame, function(item){
-# 		cat (item)
-# 	})
-# }
 
 #' check.dir.existence checks if two given directories exists
 #' and stops the program when the directories are non-existent
