@@ -1,7 +1,6 @@
 #' This test file tests behavior of all functions related to detecting changes
 #' in the loaded libraries based on collect provenance.
 #' @author Khanh Ngo
-#' @version 7/9/19
 
 library(provExplainR)
 library(testthat)

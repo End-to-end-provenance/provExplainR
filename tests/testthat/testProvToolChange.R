@@ -1,7 +1,6 @@
 #' This test file tests behavior of all functions related to detecting changes
 #' in the provenance tools which were used to collect the provenance.
 #' @author Khanh Ngo
-#' @version 7/11/19
 
 library(testthat)
 library(provExplainR)
@@ -43,13 +42,13 @@ test_that("warning shown if no provenance tool was recorded by provParseR", {
 	empty.tool.df1 <- data.frame()
 	empty.tool.df2 <- data.frame()
 	expect_warning(escape.message1 <- find.prov.tool.changes(olderProv.tool.df = empty.tool.df1, newerProv.tool.df = empty.tool.df2), 
-		regexp = paste("no provenance tool was recorded by provParseR\n"))
+		regexp = paste("no provenance tool was recorded in data frame returned by provParseR\n"))
 	expect_equal(escape.message1, NULL)
 	expect_warning(escape.message2 <- find.prov.tool.changes(olderProv.tool.df = old.tools.df, newerProv.tool.df = empty.tool.df2), 
-		regexp = paste("no provenance tool was recorded by provParseR\n"))
+		regexp = paste("no provenance tool was recorded in data frame returned by provParseR\n"))
 	expect_equal(escape.message2, NULL)
 	expect_warning(escape.message2 <- find.prov.tool.changes(olderProv.tool.df = empty.tool.df1, newerProv.tool.df = new.tools.df), 
-		regexp = paste("no provenance tool was recorded by provParseR\n"))
+		regexp = paste("no provenance tool was recorded in data frame returned by provParseR\n"))
 	expect_equal(escape.message2, NULL)
 })
 

@@ -2,8 +2,7 @@
 #' cases in provExplainR.R, which includes checking the existence of 
 #' directories, data frames, getting ProvInfo object from provParseR, etc.
 #' @author Khanh Ngo
-#' @version 7/9/19
-#' 
+ 
 library(provExplainR)
 library(testthat)
 
@@ -62,16 +61,18 @@ test_that("warning is shown for non-existent data frames", {
 	expect_true(check.df.existence(aspect = "Environment", df1 = first.df, df2 = second.df))
 })
 
-########## test customly printing out a data frame ##########
-test_that("customly prints out a data frame", {
-	no.row.df <- data.frame(name = c("throw.away"), value = c("throw.away"))
-	no.row.df <- no.row.df[-1, ]
-	full.df <- data.frame(name = c("A", "B"), value = c(1, 2))
-	expected.full.str <- "\n name value\n    A     1\n    B     2"
+########## test checking if a data frame is empty
+test_that("warning is shown for empty data frames", {
+	first.df <- data.frame(name = c("throw.away"), value = c("throw.away"), stringsAsFactors = FALSE)
+	first.df <- first.df[-1, ]
+	second.df <- data.frame(name = c("greetings"), value = c("hello"), stringsAsFactors = FALSE)
 
-	expect_equal(capture_output(display.custom.df(NULL)), "NONE")
-	expect_equal(capture_output(display.custom.df(data.frame())), "NONE")
-	expect_equal(capture_output(display.custom.df(no.row.df)), "NONE")
-	expect_equal(capture_output(display.custom.df(full.df)), expected.full.str)
+	expect_warning(escape.value1 <- check.df.empty(aspect = "script", df1 = first.df, df2 = second.df),
+		regexp = paste("no script was recorded in data frame returned by provParseR\n"))
+	expect_false(escape.value1)
+	expect_warning(escape.value2 <- check.df.empty(aspect = "environment factor", df1 = second.df, df2 = first.df), 
+		regexp = paste("no environment factor was recorded in data frame returned by provParseR\n"))
+	expect_false(escape.value2)
+	expect_true(check.df.empty(aspect = "library", second.df, second.df))
 })
 
