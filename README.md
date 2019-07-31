@@ -36,16 +36,18 @@ The default value of <i>save</i> is false.
 2. To view the difference between two scripts in the old and new provenance directories:
 
 ```
-prov.diff.script ("mainScript.R", "prov_testdata_2019-06-10T14.35.52EDT", "prov_testdata_2019-06-17T16.20.23EDT")
+prov.diff.script (first.script = "mainScript.R", olderProv.dir = olderProv."prov_testdata_2019-06-10T14.35.52EDT", newerProv.dir =  "prov_testdata_2019-06-17T16.20.23EDT")
 ```
 
 prov.diff.script has one optional parameters, <i>second.script</i>.
 If <i>second.script</i> is specified, prov.diff.script assumes the first script 
 argument is the name of the script located in the older provenance directory, 
 and the second script argument is the name of the script located in the newer 
-provenance directory. If <i>second.script</i> is not specified,
-prov.diff.script assumes that the first script argument is the name of the scripts 
-in both old and new provenance directory that you want to view content differences. 
+provenance directory. This can be helpful in such cases as main or sourced scripts
+in old and new provenance got renamed. If <i>second.script</i> is not specified,
+prov.diff.script assumes that you want to view difference between two scripts with
+the same name in both old and new provenance directory.
+The default value of <i>second.script</i> is NULL. 
 
 ## Example
 
