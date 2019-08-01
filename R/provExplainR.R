@@ -1,14 +1,45 @@
-#' Immplementation of provExplainR: detect changes and report to users
-#' @author Khanh Ngo
+# Copyright (C) President and Fellows of Harvard College and 
+# Trustees of Mount Holyoke College, 2019.
 
-#' provExplainR takes in two provenance directories, detect changes, and
-#' report to users. Set 'save' parameter to be true to have the results
-#' written in a txt file.
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program.  If not, see
+#   <http://www.gnu.org/licenses/>.
+
+###############################################################################
+
+#' Provenance explanation function
+#' 
+#' prov.explain reads two provenance collections and finds differences between these two versions
+#' 
+#' This function use provenance collected using the rdtLite or rdt packages.
+#' 
+#' Factors under examination includes:
+#' \itemize{
+#'   \item Environmental information identifying when the scripts were executed, the version of R,
+#' 		the computing systems, the tool and version used to collect the provenances, the location
+#' 		of the provenance file, and the hash algorithm used to hash data files.
+#'   \item Versions of libraries loaded
+#'   \item Versions of provenance tools
+#'   \item Contents and names of main and sourced scripts 
+#' }
+#' 
 #' @param olderProv.dir path of older provenance directory
 #' @param newerProv.dir path of newer provenance directory
 #' @param save if true saves the report to the file prov-explain.txt
-#' in the current working directory
+#' in the current working director
 #' @export
+#' @examples
+#' \dontrun{prov.explain("oldProvDir", "newProvDir")}
 prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 	# check the existence of two given directories
 	check.dir.existence(olderProv.dir, newerProv.dir)
@@ -23,8 +54,13 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 	detect.changes (olderProv.dir, newerProv.dir)
 }
 
-#' prov.diff.script visualizes the difference between the content of
-#' two scripts. Users must specify name of the first script, 
+#' Provenance Script Diff function
+#' 
+#' prov.diff.script visualizes the differences between the contents of two scripts based on given provenance collections.
+#' 
+#' This function use provenance collected using the rdtLite or rdt packages.
+#' 
+#' Users must specify name of the first script, 
 #' old provenance directory path and new provenance directory 
 #' path. Name of second script is optional. If second script 
 #' is specified, provExplainR assumes first script is located in the 
@@ -36,6 +72,8 @@ prov.explain <- function (olderProv.dir, newerProv.dir, save = FALSE){
 #' @param newerProv.dir path of newer provenance directory
 #' @param second.script name of second script 
 #' @export
+#' @example
+#' \dontrun{prov.diff.script("mainTestScript.R", "oldProvDir", "newProvDir")}
 prov.diff.script <- function(first.script, olderProv.dir, newerProv.dir, second.script = NULL) {
 	# check the existence of two given directories
 	check.dir.existence(olderProv.dir, newerProv.dir)
