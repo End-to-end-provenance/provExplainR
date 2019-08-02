@@ -2,14 +2,7 @@
 % Please edit documentation in R/provExplainR.R
 \name{prov.diff.script}
 \alias{prov.diff.script}
-\title{prov.diff.script visualizes the difference between the content of
-two scripts. Users must specify name of the first script, 
-old provenance directory path and new provenance directory 
-path. Name of second script is optional. If second script 
-is specified, provExplainR assumes first script locates in the 
-old provenance folder and second script locates in 
-the new provenance folder. Otherwise, provExplainR assumes 
-both provenance folders share same script name.}
+\title{Provenance Script Diff function}
 \usage{
 prov.diff.script(first.script, olderProv.dir, newerProv.dir,
   second.script = NULL)
@@ -24,12 +17,16 @@ prov.diff.script(first.script, olderProv.dir, newerProv.dir,
 \item{second.script}{name of second script}
 }
 \description{
-prov.diff.script visualizes the difference between the content of
-two scripts. Users must specify name of the first script, 
+prov.diff.script visualizes the differences between the contents of two scripts based on given provenance collections.
+}
+\details{
+This function use provenance collected using the rdtLite or rdt packages.
+
+Users must specify name of the first script, 
 old provenance directory path and new provenance directory 
 path. Name of second script is optional. If second script 
-is specified, provExplainR assumes first script locates in the 
-old provenance folder and second script locates in 
+is specified, provExplainR assumes first script is located in the 
+old provenance folder and second script is located in 
 the new provenance folder. Otherwise, provExplainR assumes 
-both provenance folders share same script name.
+both scripts share the same name.
 }

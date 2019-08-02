@@ -2,7 +2,7 @@
 % Please edit documentation in R/provExplainR.R
 \name{prov.explain}
 \alias{prov.explain}
-\title{Immplementation of provExplainR: detect changes and report to users}
+\title{Provenance explanation function}
 \usage{
 prov.explain(olderProv.dir, newerProv.dir, save = FALSE)
 }
@@ -12,14 +12,24 @@ prov.explain(olderProv.dir, newerProv.dir, save = FALSE)
 \item{newerProv.dir}{path of newer provenance directory}
 
 \item{save}{if true saves the report to the file prov-explain.txt
-in the current working directory}
+in the current working director}
 }
 \description{
-Immplementation of provExplainR: detect changes and report to users
+prov.explain reads two provenance collections and finds differences between these two versions
 }
-\author{
-Khanh Ngo
-provExplainR takes in two provenance directories, detect changes, and
-report to users. Set 'save' parameter to be true to have the results
-written in a txt file.
+\details{
+This function use provenance collected using the rdtLite or rdt packages.
+
+Factors under examination includes:
+\itemize{
+  \item Environmental information identifying when the scripts were executed, the version of R,
+		the computing systems, the tool and version used to collect the provenances, the location
+		of the provenance file, and the hash algorithm used to hash data files.
+  \item Versions of libraries loaded
+  \item Versions of provenance tools
+  \item Contents and names of main and sourced scripts 
+}
+}
+\examples{
+\dontrun{prov.explain("oldProvDir", "newProvDir")}
 }
