@@ -24,7 +24,7 @@ library("provExplainR")
 1. To view differences between two provenance directories:
 
 ```
-prov.explain (dir1 = "prov_MyScript", newerProv.dir = "prov_MyScript_2019-08-06T15.59.18EDT")
+prov.explain (dir1 = "prov_MyScript", dir2 = "prov_MyScript_2019-08-06T15.59.18EDT")
 ```
 
 prov.explain function has one optional parameters, <i>save</i>. 
@@ -33,10 +33,10 @@ being displayed in the console. The file is named <i>prov-explain.txt</i> and
 is stored in the first provenance directory. 
 The default value of <i>save</i> is false.
 
-2. To view the difference between two scripts in the old and new provenance directories:
+2. To view the difference between two scripts in the first and second provenance directories:
 
 ```
-prov.diff.script (first.script = "mainScript.R", dir1 = olderProv."prov_testdata_2019-06-10T14.35.52EDT", dir2 = "prov_testdata_2019-06-17T16.20.23EDT")
+prov.diff.script (first.script = "mainScript.R", dir1 = "prov_testdata_2019-06-10T14.35.52EDT", dir2 = "prov_testdata_2019-06-17T16.20.23EDT")
 ```
 
 prov.diff.script has one optional parameters, <i>second.script</i>.
