@@ -104,3 +104,8 @@ PROVENANCE TOOL CHANGES:
 Tool differences: 
 No differences have been detected
 ```
+
+Here is an example of what the prov.diff.script output looks like. Script from 
+the first provenance directory is displayed on the left. Script from the second
+provenance directory is displayed on the right. 
+![Image description](prov.example.png)
