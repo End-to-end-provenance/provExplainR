@@ -11,14 +11,14 @@ context("Corner cases: directories, json files, data frames, custom print")
 source("initTest.R")
 
 # provenance directory paths for testing
-old.prov.dir <- get.test.prov.dirs ("prov_HF-data_2019-06-10T15.32.25EDT")
-new.prov.dir <- get.test.prov.dirs ("prov_HF-data")
+first.prov.dir <- get.test.prov.dirs ("prov_HF-data_2019-06-10T15.32.25EDT")
+second.prov.dir <- get.test.prov.dirs ("prov_HF-data")
 
 
 ########## test checking existence of two directories ##########
 test_that("error message is empty for existing directories", {
-	expect_equal(check.dir.existence(old.prov.dir, new.prov.dir), "")
-	expect_equal(check.dir.existence(new.prov.dir, old.prov.dir), "")
+	expect_equal(check.dir.existence(first.prov.dir, second.prov.dir), "")
+	expect_equal(check.dir.existence(second.prov.dir, first.prov.dir), "")
 })
 
 test_that("error message is shown for non-existent directories with corresponding names", {
@@ -26,8 +26,8 @@ test_that("error message is shown for non-existent directories with correspondin
 	error.prov.dir1 <- "testdata/error_dir1"
 	error.prov.dir2 <- "testdata/error_dir2"
 
-	expect_error(check.dir.existence(old.prov.dir, error.prov.dir1), regexp = paste(error.prov.dir1, "directory not found\n"))
-	expect_error(check.dir.existence(error.prov.dir2, new.prov.dir), regexp = paste(error.prov.dir2, "directory not found\n"))
+	expect_error(check.dir.existence(first.prov.dir, error.prov.dir1), regexp = paste(error.prov.dir1, "directory not found\n"))
+	expect_error(check.dir.existence(error.prov.dir2, second.prov.dir), regexp = paste(error.prov.dir2, "directory not found\n"))
 	expect_error(check.dir.existence(error.prov.dir1, error.prov.dir2), regexp = paste(error.prov.dir1, " directory not found\n", 
 		error.prov.dir2, " directory not found\n", sep = ""))
 	expect_error(check.dir.existence(error.prov.dir2, error.prov.dir1), paste(error.prov.dir2, " directory not found\n",

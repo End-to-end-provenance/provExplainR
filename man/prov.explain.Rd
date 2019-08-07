@@ -4,15 +4,14 @@
 \alias{prov.explain}
 \title{Provenance explanation function}
 \usage{
-prov.explain(olderProv.dir, newerProv.dir, save = FALSE)
+prov.explain(dir1, dir2, save = FALSE)
 }
 \arguments{
-\item{olderProv.dir}{path of older provenance directory}
+\item{dir1}{path of first provenance directory}
 
-\item{newerProv.dir}{path of newer provenance directory}
+\item{dir2}{path of second provenance directory}
 
-\item{save}{if true saves the report to the file prov-explain.txt
-in the current working director}
+\item{save}{if true saves the report to the file prov-explain.txt in the first directory}
 }
 \description{
 prov.explain reads two provenance collections and finds differences between these two versions
@@ -31,5 +30,5 @@ Factors under examination includes:
 }
 }
 \examples{
-\dontrun{prov.explain("oldProvDir", "newProvDir")}
+\dontrun{prov.explain("first.test.dir", "second.test.dir")}
 }

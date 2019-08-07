@@ -1,5 +1,5 @@
 ## provExplainR
-Reads two provenance directories and generates difference between
+Reads two provenance directories and generates differences between
 two versions including the environment in which the scripts were executed,
 versions of attached libraries, versions of provenance tool, name and content
 of main and sourced scripts.
@@ -24,80 +24,88 @@ library("provExplainR")
 1. To view differences between two provenance directories:
 
 ```
-prov.explain (olderProv.dir = "prov_testdata_2019-06-10T14.35.52EDT", newerProv.dir = "prov_testdata_2019-06-17T16.20.23EDT")
+prov.explain (dir1 = "prov_MyScript", dir2 = "prov_MyScript_2019-08-06T15.59.18EDT")
 ```
 
 prov.explain function has one optional parameters, <i>save</i>. 
 If <i>save</i> is true, the comparison result is saved to a file, in addition to
 being displayed in the console. The file is named <i>prov-explain.txt</i> and 
-is stored in the newer provenance directory among two given directories. 
+is stored in the first provenance directory. 
 The default value of <i>save</i> is false.
 
-2. To view the difference between two scripts in the old and new provenance directories:
+2. To view the difference between two scripts in the first and second provenance directories:
 
 ```
-prov.diff.script (first.script = "mainScript.R", olderProv.dir = olderProv."prov_testdata_2019-06-10T14.35.52EDT", newerProv.dir =  "prov_testdata_2019-06-17T16.20.23EDT")
+prov.diff.script (first.script = "mainScript.R", dir1 = "prov_testdata_2019-06-10T14.35.52EDT", dir2 = "prov_testdata_2019-06-17T16.20.23EDT")
 ```
 
 prov.diff.script has one optional parameters, <i>second.script</i>.
 If <i>second.script</i> is specified, prov.diff.script assumes the first script 
-argument is the name of the script located in the older provenance directory, 
-and the second script argument is the name of the script located in the newer 
+argument is the name of the script located in the first provenance directory, 
+and the second script argument is the name of the script located in the second 
 provenance directory. This can be helpful in such cases as main or sourced scripts
-in old and new provenance got renamed. If <i>second.script</i> is not specified,
-prov.diff.script assumes that you want to view difference between two scripts with
-the same name in both old and new provenance directory.
+in both provenance collections got renamed. If <i>second.script</i> is not specified,
+prov.diff.script assumes that you want to view differences between two scripts with
+the same name in both first and second provenance directory.
 The default value of <i>second.script</i> is NULL. 
 
 ## Example
 
 Here is an example of what the comparison result looks like. provExplainR first looks
-at environment factors (like architecture, operating systems, scriptTimestamp, etc.),
-then versions of attached libraries, versions of provenance tool rdtLite, name and 
-content of main and sourced scripts. 
+at name and content of the main and sourced scripts, then verions of attached libraries, 
+environment factors (like architecture, operating systems, scriptTimestamp, etc.),
+and versions of provenance tool rdt/rdtLite
 
 ```
-ENVIRONMENT CHANGES: 
-Environment updates:
-Environment factor: scriptTimeStamp
-### Old value: 2019-06-10T14.33.23EDT
-### New value: 2019-06-10T15.05.25EDT
-Environment factor: provDirectory
-### Old value: /Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_HF-data_2019-06-10T14.35.18EDT
-### New value: /Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_HF-data_2019-06-26T15.41.09EDT
-Environment factor: provTimestamp
-### Old value: 2019-06-10T14.35.18EDT
-### New value: 2019-06-26T15.41.09EDT
+You entered:
+dir1 = prov_MyScript 
+dir2 = prov_MyScript_2019-08-06T15.59.18EDT
 
-New environment factors added:
-            label value
- totalElapsedTime 5.562
+SCRIPT CHANGES: 
+The content of the main script MyScript.R has changed
+### dir1 main script MyScript.R was last modified at: 2019-08-06T15.40.34EDT
+### dir2 main script MyScript.R was last modified at: 2019-08-06T15.54.37EDT
 
+Sourced scripts in dir2 but not in dir1:
+### HelperScript.R, which was last modified at: 2019-08-06T15.27.44EDT
 
 LIBRARY CHANGES: 
-Library updates:
-    name old.version new.version
- rdtLite       1.0.2       1.1.0
+Library version differences:
+      name dir1.version dir2.version
+     dplyr        0.8.1        0.8.3
+ rmarkdown         1.13         1.14
 
 
-Libraries added:
-       name version
- provParseR   0.1.2
+Libraries in dir2 but not in dir1:
+         name version
+      cluster   2.0.8
+ provExplainR   0.1.0
 
 
-Libraries unloaded:
-           name version
- provSummarizeR     1.0
+Libraries in dir1 but not in dir2:
+No such libraries were found
+
+ENVIRONMENT CHANGES: 
+Value differences: 
+Attribute: total elapsed time
+### dir1 value: 7.68
+### dir2 value: 6.917
+
+Attribute: provenance directory
+### dir1 value: /Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_MyScript
+### dir2 value: /Users/khanhl.ngo/HarvardForest/Day3Exercise/prov_MyScript_2019-08-06T15.59.18EDT
+
+Attribute: provenance collection time
+### dir1 value: 2019-08-06T15.41.56EDT
+### dir2 value: 2019-08-06T15.59.18EDT
 
 
 PROVENANCE TOOL CHANGES: 
-Tool updates: 
-Tool name: rdtLite
-### Old tool version: 1.0.2 ; old json version: 2.1
-### New tool version: 1.1.0 ; new json version: 2.2
-
-SCRIPT CHANGES: 
-The content of the main script HF-data.R has changed
-### Old script HF-data.R was last modified at: 2019-06-10T14.33.23EDT
-### New script HF-data.R was last modified at: 2019-06-10T15.05.25EDT
+Tool differences: 
+No differences have been detected
 ```
+
+Here is an example of what the prov.diff.script output looks like. Script from 
+the first provenance directory is displayed on the left. Script from the second
+provenance directory is displayed on the right. 
+![Image description](prov.example.png)
