@@ -1,17 +1,33 @@
 Package: provExplainR
 Type: Package
-Title: Explain behavior of R scripts based on collected provenance
+Title: Compare two provenance collections to explain different script outputs
 Version: 0.1.0
+Date: 2019-06-02
 Author: Khanh Ngo
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Maintainer: Khanh Ngo <ngo22k@mtholyoke.edu>
+Description: 
+    Inspects provenances collected by the 'rdt' or 'rdtLite' packages, 
+    or other tools providing compatible PROV JSON output created by 
+    the execution of a script, and find differences between two provenance 
+    collections. Factors under examination included the hardware and 
+    software used to execute the script, versions of attached libraries, 
+    use of global variables, modified inputs and outputs, and changes 
+    in main and sourced scripts. Based on detected changes, provExplainR 
+    can be used to study how these factors affect the behavior of 
+    the script and generate a promising diagnosis of the causes of different 
+    script results. More information about the RDataTracker family of 
+    provenance tools can be found at <https://github.com/End-to-end-provenance/>.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
-    provParseR (>= 0.1.2)
+    provParseR (>= 0.1.2),
+    diffobj, 
+    digest
 Suggests: 
     testthat
+URL: https://github.com/End-to-end-provenance
+BugReports: https://github.com/End-to-end-provenance/provExplainR/issues
 RoxygenNote: 6.1.1
+
