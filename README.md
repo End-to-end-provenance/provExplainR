@@ -52,7 +52,7 @@ The default value of <i>second.script</i> is NULL.
 ## Example
 
 Here is an example of what the comparison result looks like. provExplainR first looks
-at name and content of main and sourced script, then verions of attached libraries, 
+at name and content of the main and sourced scripts, then verions of attached libraries, 
 environment factors (like architecture, operating systems, scriptTimestamp, etc.),
 and versions of provenance tool rdt/rdtLite
 

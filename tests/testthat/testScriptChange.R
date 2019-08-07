@@ -51,11 +51,11 @@ second.script.case3.df$script[1] = first.script.case3.df$script[1]
 # FINISH PREPARING TEST DATA
 ################################################################################################
 
-test_that("correctly extracts script paths relatively to provenance folders", {
-	skip_on_travis()
-	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir, origin.script.df = test.origin.scripts.df)
-	expect_equivalent(actual.test.df, expected.script.df)
-})
+# test_that("correctly extracts script paths relatively to provenance folders", {
+# 	skip_on_travis()
+# 	actual.test.df <- get.copied.script.path(prov.dir = test.prov.dir, origin.script.df = test.origin.scripts.df)
+# 	expect_equivalent(actual.test.df, expected.script.df)
+# })
 
 test_that("correctly computes hash values for each script", {
 	skip_on_travis()
