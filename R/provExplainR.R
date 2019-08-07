@@ -50,7 +50,7 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 	}
 
 	# check for changes
-	detect.changes (dir1, dir2)
+	detect.changes (dir1, dir2, save)
 }
 
 #' Provenance Script Diff function
@@ -71,8 +71,6 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 #' @param dir2 path of second provenance directory
 #' @param second.script name of second script 
 #' @export
-#' @example
-#' \dontrun{prov.diff.script("mainTestScript.R", "first.test.dir", "second.test.dir")}
 prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
@@ -107,11 +105,44 @@ prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 #' @param dir1 path to first prov directory
 #' @param dir2 path to second prov directory
 #' @noRd
-detect.changes <- function (dir1, dir2){
-	cat(paste("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2))
+detect.changes <- function (dir1, dir2, save){
 	# gets the ProvInfo objects
 	first.prov.info <- get.prov.info.object(dir1)
 	second.prov.info <- get.prov.info.object(dir2)
+
+	if(save == TRUE){
+		save.to.text.file(dir1, dir2, first.prov.info, second.prov.info)
+	}else{
+		detail.detect.changes(dir1, dir2, first.prov.info, second.prov.info)
+	}
+}
+
+#' save.to.text.file outputs comparison results to the console 
+#' and saves them into a text file named prov-explain.txt located 
+#' in the first provenance directory
+#' @param dir1 first provenance directory
+#' @param dir2 second provenance directory 
+#' @noRd
+save.to.text.file <- function(dir1, dir2, first.prov.info, second.prov.info) {
+	# gets the full path of first provenance directory 
+	first.env.df <- provParseR::get.environment(first.prov.info)
+	dir1.full.path <- first.env.df[first.env.df$label == "provDirectory", ]$value 
+	explain.file <- paste(dir1.full.path, "/prov-explain.txt", sep = "")
+	sink(explain.file, split = TRUE)
+	detail.detect.changes(dir1, dir2, first.prov.info, second.prov.info)
+	sink()
+	cat(paste("\n\nSaving comparison results in", explain.file))
+}
+
+#' detail.detect.changes is a helper method for detect.changes.
+#' Its main job is start detecting changes between two provenance collections.
+#' @param dir1 first provenance directory
+#' @param dir2 second provenance directory
+#' @param first.prov.info ProvInfo object for first provenance collection
+#' @param second.prov.info ProvInfo object for second provenance collection
+#' @noRd
+detail.detect.changes <- function(dir1, dir2, first.prov.info, second.prov.info) {
+	cat(paste("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2))
 
 	# detect changes in different aspects
 	print.script.changes (provParseR::get.scripts(first.prov.info), provParseR::get.scripts(second.prov.info), dir1, dir2)
