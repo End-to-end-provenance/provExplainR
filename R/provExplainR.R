@@ -49,8 +49,12 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 		return (NA)
 	}
 
-	# check for changes
-	detect.changes (dir1, dir2)
+	# detecting changes 
+	if(save == TRUE){
+		save.to.text.file(dir1, dir2)
+	}else{
+		detect.changes(dir1, dir2)
+	}
 }
 
 #' Provenance Script Diff function
@@ -71,8 +75,6 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 #' @param dir2 path of second provenance directory
 #' @param second.script name of second script 
 #' @export
-#' @example
-#' \dontrun{prov.diff.script("mainTestScript.R", "first.test.dir", "second.test.dir")}
 prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
@@ -109,6 +111,7 @@ prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 #' @noRd
 detect.changes <- function (dir1, dir2){
 	cat(paste("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2))
+
 	# gets the ProvInfo objects
 	first.prov.info <- get.prov.info.object(dir1)
 	second.prov.info <- get.prov.info.object(dir2)
@@ -118,6 +121,21 @@ detect.changes <- function (dir1, dir2){
 	print.library.changes (provParseR::get.libs(first.prov.info), provParseR::get.libs(second.prov.info))
 	print.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	print.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
+}
+
+#' save.to.text.file outputs comparison results to the console 
+#' and saves them into a text file named prov-explain.txt located 
+#' in the first provenance directory
+#' @param dir1 first provenance directory
+#' @param dir2 second provenance directory 
+#' @noRd
+save.to.text.file <- function(dir1, dir2) {
+	# gets the full path of first provenance directory 
+	explain.file <- paste(dir1, "/prov-explain.txt", sep = "")
+	sink(explain.file, split = TRUE)
+	detect.changes(dir1, dir2)
+	sink()
+	cat(paste("\n\nSaving comparison results in", explain.file))
 }
 
 #' print.library.changes gets changes in library by calling a helper
