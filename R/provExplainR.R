@@ -906,4 +906,105 @@ check.df.empty <- function (aspect, df1, df2) {
 	return (TRUE)
 }
 
+#####################################################################################
+#' IN DEVELOPMENT - PROCEDURE NODES
+
+#' find.changes.proc.nodes inspects procedure nodes of both provenance 
+#' collections and finds the first point in which the procedure node 
+#' data frames start diverging. 
+#' @param prov.info1 prov info object of dir1
+#' @param prov.info2 prov info object of dir2
+#' @noRd
+find.changes.proc.nodes <- function (prov.info1, prov.info2) {
+	# get the corresponding procedure node data frames
+	proc.node.df1 <- provParseR::get.proc.nodes(prov.info1)
+	proc.node.df2 <- provParseR::get.proc.nodes(prov.info2)
+
+	# filter out Start and Finish nodes, only consider Operation nodes
+	proc.node.df1 <- dplyr::filter(proc.node.df1, proc.node.df1$type == "Operation")
+	proc.node.df2 <- dplyr::filter(proc.node.df2, proc.node.df2$type == "Operation")
+
+	# get the script data frames 
+	scripts.df1 <- provParseR::get.saved.scripts(prov.info1)
+	scripts.df2 <- provParseR::get.saved.scripts(prov.info2)
+
+	# check existence and emptiness status of the data frames
+	if(FALSE == check.df.existence("Procedure node", proc.node.df1, proc.node.df2)
+		|| FALSE == check.df.empty("procedure node", proc.node.df1, proc.node.df2)
+		|| FALSE == check.df.existence("Saved script", scripts.df1, scripts.df2)
+		|| FALSE == check.df.empty("saved script", scripts.df1, scripts.df2)) {
+		return (NULL)
+	}
+
+	# for each script in each provenance folder, get its array of lines 
+	all.scripts.array1 <- get.array.of.arrays.of.lines(scripts.df1)
+	all.scripts.array2 <- get.array.of.arrays.of.lines(scripts.df2)
+
+	# loop through procedure nodes with the shorter length of the two data frames
+	for(i in 1:min(nrow(proc.node.df1), nrow(proc.node.df2))){
+		proc.node.info1 <- proc.node.df1[i, ]
+		proc.node.info2 <- proc.node.df2[i, ]
+		# get full info for the current proc nodes 
+		detailed.info1 <- get.proc.node.full.info(proc.node.info1, all.scripts.array1)
+		detailed.info2 <- get.proc.node.full.info(proc.node.info2, all.scripts.array2)
+
+		# compare two pieces of information
+		if(identical(detailed.info1, detailed.info2) == FALSE){
+			printf("\nFirst procedure node differences found:")
+			# helpful output here (subject to change)
+			cat("\n### Line", proc.node.info1$startLine, "in script", basename(scripts.df1$script[proc.node.info1$scriptNum]))
+			cat("\n### versus line", proc.node.info2$startLine, "in script", basename(scripts.df2$script[proc.node.info2$scriptNum]))
+			return(cat(""))
+		}
+	}
+
+	# lines are identical so far. Compare lengths
+	if(nrow(proc.node.df1) == nrow(proc.node.df2)) {
+		return(cat("\nAll procedure nodes of dir1 and dir2 are identical"))
+	}
+
+	# lengths are different
+	cat("\nFirst procedure node differences found:")
+	if(nrow(proc.node.df1) > nrow(proc.node.df2)) {
+		temp.proc <- proc.node.df1[nrow(proc.node.df2) + 1, ]
+		temp.script <- scripts.df1
+	}else{
+		temp.proc <- proc.node.df2[nrow(proc.node.df1) + 1, ]
+		temp.script <- scripts.df2
+	}
+	cat("\n### Line", temp.proc$startLine, "in script", basename(temp.script$script[temp.proc$scriptNum]))
+}
+
+#' get.proc.node.full.info gets the detailed lines about a given procedure node.
+#' If there are many lines within 1 procedure node, all lines will be collapsed into 
+#' one line. Returned character does not contain any white spaces
+#' @param proc.node.info current procedure node extracted from the proc node data frame
+#' @param all.scripts.full.line an array of arrays of lines of all scripts in a data provenance collection
+#' @noRd
+get.proc.node.full.info <- function(proc.node.info, all.scripts.full.line) {
+	current.script.line.array <- all.scripts.full.line[[proc.node.info$scriptNum]]
+	if(proc.node.info$startLine - proc.node.info$endLine == 0) {
+		full.line <- current.script.line.array[proc.node.info$startLine]
+	}else{
+		full.line <- current.script.line.array[proc.node.info$startLine:proc.node.info$endLine]
+		paste(full.line, sep = "", collapse = "")
+	}
+	return (stringr::str_replace_all(full.line, pattern = " ", replacement = ""))
+}
+
+#' get.array.of.arrays.of.lines returns an array of arrays of lines for each script
+#' in the given script data frame
+#' @param scripts.df script data frame
+#' @noRd
+get.array.of.arrays.of.lines <- function(scripts.df) {
+	array.of.arrays <- lapply(scripts.df$script, function(script) {
+		file <- file(script, "r")
+		lines <- readLines(file, warn = FALSE)
+		close(file)
+		return(lines)
+	})
+	return(array.of.arrays)
+}
+
+
 
