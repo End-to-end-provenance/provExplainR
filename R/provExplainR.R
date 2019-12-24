@@ -950,7 +950,7 @@ find.changes.proc.nodes <- function (prov.info1, prov.info2) {
 
 		# compare two pieces of information
 		if(identical(detailed.info1, detailed.info2) == FALSE){
-			printf("\nFirst procedure node differences found:")
+			cat("\nFirst procedure node differences found:")
 			# helpful output here (subject to change)
 			cat("\n### Line", proc.node.info1$startLine, "in script", basename(scripts.df1$script[proc.node.info1$scriptNum]))
 			cat("\n### versus line", proc.node.info2$startLine, "in script", basename(scripts.df2$script[proc.node.info2$scriptNum]))
