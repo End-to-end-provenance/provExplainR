@@ -119,6 +119,7 @@ detect.changes <- function (dir1, dir2){
 	# detect changes in different aspects
 	print.script.changes (provParseR::get.scripts(first.prov.info), provParseR::get.scripts(second.prov.info), dir1, dir2)
 	print.library.changes (provParseR::get.libs(first.prov.info), provParseR::get.libs(second.prov.info))
+	print.input.files.changes (provParseR::get.input.files(first.prov.info), provParseR::get.input.files(second.prov.info))
 	print.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	print.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
 }
@@ -710,6 +711,130 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 	return (origin.script.df)
 }
 
+#' print.input.files.changes checks if input files in two data provenance
+#' collections are different based on their hash values.
+#' NOTE: this function currently does not work for URL as input.
+#' @param input.df1 data frame of input files in first data provenance collection
+#' @param input.df2 data frame of input files in second data provenance collection
+#' @noRd
+#' 
+#' QUESTION: are inputs in sourced scripts recorded?
+print.input.files.changes <- function (input.df1, input.df2) {
+	cat("\n\nINPUT FILE CHANGES:\n")
+	if(FALSE == check.df.existence("Input file", input.df1, input.df2)) {
+		return (NULL)
+	}
+
+	# process input files (not URL)
+	input.files.df1 <- input.df1[input.df1$type == "File", ]
+	input.files.df2 <- input.df2[input.df2$type == "File", ]
+
+	empty <- FALSE
+	if(check.empty.and.print.input.files(input.files.df1, "1") == FALSE) {
+		empty <- TRUE
+	}
+
+	if(check.empty.and.print.input.files(input.files.df2, "2") == FALSE) {
+		empty <- TRUE
+	}
+
+	if(empty) return(NULL)
+
+	# if reached here, both data frames must have some input files
+	# compare files with same name
+	same.name.files.df <- dplyr::inner_join(input.files.df1, input.files.df2, by = "name")
+	compare.input.files.same.name(same.name.files.df)
+
+	# compare files with different name
+	different.name.files.df1 <- dplyr::anti_join(input.files.df1, input.files.df2, by = "name")
+	different.name.files.df2 <- dplyr::anti_join(input.files.df2, input.files.df1, by = "name")
+	compare.input.files.different.name(different.name.files.df1, different.name.files.df2)
+}
+
+#' compare.input.files.same.name takes in a data frame of input files
+#' of dir1 and dir2 that have the same name. The function then compares
+#' the content of these files to see if they have been modified. If yes,
+#' corresponding modification times are printed.
+#' @param same.name.files.df data frame of input files with same names 
+#' @noRd
+compare.input.files.same.name <- function (same.name.files.df) {
+	if(FALSE == is.null(same.name.files.df) && nrow(same.name.files.df) != 0) {
+		# case: same hash value, thus no change detected
+		same.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x == same.name.files.df$hash.y)
+		for(i in 1:nrow(same.hash.df)) {
+			cat(paste("\nNo change detected in the input file", same.hash.df$name[i]))
+		}
+
+		# case: different hash value, thus content changed
+		different.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x != same.name.files.df$hash.y)
+		for(i in 1:nrow(different.hash.df)) {
+			row <- different.hash.df[i, ]
+			cat(paste("\n\nThe content of the input file", row$name, "has changed"))
+			cat(paste("\n### dir1", row$name, "was last modified at:", row$timestamp.x))
+			cat(paste("\n### dir2", row$name, "was last modified at:", row$timestamp.y))
+		}
+	}
+}
+
+#' compare.input.files.different.name takes in 2 data frames of input files:
+#' one containing files with names in dir1 but not in dir2, the other containing 
+#' files with names in dir2 but not in dir1. The function then compares
+#' hash values of these files to see if there are some files that are the same but 
+#' have been renamed. As for files with different names and different hash values,
+#' the function simply returns information of the files to user.
+#' @param different.name.files.df1 data frame of input files whose names are exclusive to dir1
+#' @param different.name.files.df2 data frame of input files whose names are exclusive to dir2
+#' @noRd
+compare.input.files.different.name <- function(different.name.files.df1, different.name.files.df2) {
+	# case: files with same content but different name
+	same.hash.df <- dplyr::inner_join(different.name.files.df1, different.name.files.df2, by = "hash")
+	if(FALSE == is.null(same.hash.df) && nrow(same.hash.df) != 0) {
+		for(i in 1:nrow(same.hash.df)) {
+			cat(paste("\nContent of two input files", same.hash.df$name.x[i], "(dir1) and", same.hash.df$name.y[i], "(dir 2) is the same"))
+		}
+	}
+
+	# case: files with different hash values and names (dir1)
+	exclusive.files1 <- dplyr::anti_join(different.name.files.df1, different.name.files.df2, by = "hash")
+	if(FALSE == is.null(exclusive.files1) && nrow(exclusive.files1) != 0) {
+		cat("\n\nInput files in dir1 but not in dir2:")
+		for(i in 1:nrow(exclusive.files1)) {
+			cat(paste("\n### ", exclusive.files1$name[i], ", which was last modified at ", exclusive.files1$timestamp[i], sep = ""))
+		}
+	}
+
+	# case: files with different hash values and names (dir2)
+	exclusive.files2 <- dplyr::anti_join(different.name.files.df2, different.name.files.df1, by = "hash")
+	if(FALSE == is.null(exclusive.files2) && nrow(exclusive.files2) != 0) {
+		cat("\n\nInput files in dir2 but not in dir1:")
+		for(i in 1:nrow(exclusive.files2)) {
+			cat(paste("\n### ", exclusive.files2$name[i], ", which was last modified at ", exclusive.files2$timestamp[i], sep = ""))
+		}
+	}
+}
+
+#' check.empty.and.print.input.files prints out all input files recorded in
+#' a given data frame, corresponding to a folder/directory number. If the 
+#' data frame is empty, a helpful message is returned to user. 
+#' @param input.df data frame of input files
+#' @param dir current working provenance directory
+#' @noRd
+check.empty.and.print.input.files <- function(input.df, dir) {
+	if(nrow(input.df) == 0) {
+		cat(paste("No input files were found in dir", dir, "\n"))
+		return(FALSE)
+	}
+	cat(paste("List of input files in dir", dir, ":\n", sep = ""))
+	for(i in 1:nrow(input.df)) {
+		row <- input.df[i, ]
+		cat(paste("### Name:", row$name, "\n"))
+		cat(paste("### Last modification time:", row$timestamp, "\n"))
+		cat(paste("### Location:", row$location, "\n\n"))
+	}
+	return(TRUE)
+}
+
+
 #' check.dir.existence checks if two given directories exists
 #' and stops the program when the directories are non-existent
 #' @param dir1 the first directory
@@ -766,7 +891,7 @@ check.df.existence <- function (aspect, df1, df2) {
 }
 
 #' check.df.empty checks if two given data frames are empty.
-#' If one of them are null, outputs a warning, returns false to
+#' If one of them is empty, outputs a warning, returns false to
 #' stop the caller of given aspect and continue the program.
 #' Otherwise, returns true
 #' @param aspect overview of what the data frames are about
@@ -780,5 +905,106 @@ check.df.empty <- function (aspect, df1, df2) {
 	}
 	return (TRUE)
 }
+
+#####################################################################################
+#' IN DEVELOPMENT - PROCEDURE NODES
+
+#' find.changes.proc.nodes inspects procedure nodes of both provenance 
+#' collections and finds the first point in which the procedure node 
+#' data frames start diverging. 
+#' @param prov.info1 prov info object of dir1
+#' @param prov.info2 prov info object of dir2
+#' @noRd
+find.changes.proc.nodes <- function (prov.info1, prov.info2) {
+	# get the corresponding procedure node data frames
+	proc.node.df1 <- provParseR::get.proc.nodes(prov.info1)
+	proc.node.df2 <- provParseR::get.proc.nodes(prov.info2)
+
+	# filter out Start and Finish nodes, only consider Operation nodes
+	proc.node.df1 <- dplyr::filter(proc.node.df1, proc.node.df1$type == "Operation")
+	proc.node.df2 <- dplyr::filter(proc.node.df2, proc.node.df2$type == "Operation")
+
+	# get the script data frames 
+	scripts.df1 <- provParseR::get.saved.scripts(prov.info1)
+	scripts.df2 <- provParseR::get.saved.scripts(prov.info2)
+
+	# check existence and emptiness status of the data frames
+	if(FALSE == check.df.existence("Procedure node", proc.node.df1, proc.node.df2)
+		|| FALSE == check.df.empty("procedure node", proc.node.df1, proc.node.df2)
+		|| FALSE == check.df.existence("Saved script", scripts.df1, scripts.df2)
+		|| FALSE == check.df.empty("saved script", scripts.df1, scripts.df2)) {
+		return (NULL)
+	}
+
+	# for each script in each provenance folder, get its array of lines 
+	all.scripts.array1 <- get.array.of.arrays.of.lines(scripts.df1)
+	all.scripts.array2 <- get.array.of.arrays.of.lines(scripts.df2)
+
+	# loop through procedure nodes with the shorter length of the two data frames
+	for(i in 1:min(nrow(proc.node.df1), nrow(proc.node.df2))){
+		proc.node.info1 <- proc.node.df1[i, ]
+		proc.node.info2 <- proc.node.df2[i, ]
+		# get full info for the current proc nodes 
+		detailed.info1 <- get.proc.node.full.info(proc.node.info1, all.scripts.array1)
+		detailed.info2 <- get.proc.node.full.info(proc.node.info2, all.scripts.array2)
+
+		# compare two pieces of information
+		if(identical(detailed.info1, detailed.info2) == FALSE){
+			cat("\nFirst procedure node differences found:")
+			# helpful output here (subject to change)
+			cat("\n### Line", proc.node.info1$startLine, "in script", basename(scripts.df1$script[proc.node.info1$scriptNum]))
+			cat("\n### versus line", proc.node.info2$startLine, "in script", basename(scripts.df2$script[proc.node.info2$scriptNum]))
+			return(cat(""))
+		}
+	}
+
+	# lines are identical so far. Compare lengths
+	if(nrow(proc.node.df1) == nrow(proc.node.df2)) {
+		return(cat("\nAll procedure nodes of dir1 and dir2 are identical"))
+	}
+
+	# lengths are different
+	cat("\nFirst procedure node differences found:")
+	if(nrow(proc.node.df1) > nrow(proc.node.df2)) {
+		temp.proc <- proc.node.df1[nrow(proc.node.df2) + 1, ]
+		temp.script <- scripts.df1
+	}else{
+		temp.proc <- proc.node.df2[nrow(proc.node.df1) + 1, ]
+		temp.script <- scripts.df2
+	}
+	cat("\n### Line", temp.proc$startLine, "in script", basename(temp.script$script[temp.proc$scriptNum]))
+}
+
+#' get.proc.node.full.info gets the detailed lines about a given procedure node.
+#' If there are many lines within 1 procedure node, all lines will be collapsed into 
+#' one line. Returned character does not contain any white spaces
+#' @param proc.node.info current procedure node extracted from the proc node data frame
+#' @param all.scripts.full.line an array of arrays of lines of all scripts in a data provenance collection
+#' @noRd
+get.proc.node.full.info <- function(proc.node.info, all.scripts.full.line) {
+	current.script.line.array <- all.scripts.full.line[[proc.node.info$scriptNum]]
+	if(proc.node.info$startLine - proc.node.info$endLine == 0) {
+		full.line <- current.script.line.array[proc.node.info$startLine]
+	}else{
+		full.line <- current.script.line.array[proc.node.info$startLine:proc.node.info$endLine]
+		paste(full.line, sep = "", collapse = "")
+	}
+	return (stringr::str_replace_all(full.line, pattern = " ", replacement = ""))
+}
+
+#' get.array.of.arrays.of.lines returns an array of arrays of lines for each script
+#' in the given script data frame
+#' @param scripts.df script data frame
+#' @noRd
+get.array.of.arrays.of.lines <- function(scripts.df) {
+	array.of.arrays <- lapply(scripts.df$script, function(script) {
+		file <- file(script, "r")
+		lines <- readLines(file, warn = FALSE)
+		close(file)
+		return(lines)
+	})
+	return(array.of.arrays)
+}
+
 
 

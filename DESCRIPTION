@@ -24,7 +24,8 @@ Imports:
     dplyr,
     provParseR (>= 0.1.2),
     diffobj, 
-    digest
+    digest,
+    stringr
 Suggests: 
     testthat
 URL: https://github.com/End-to-end-provenance
