@@ -21,8 +21,8 @@ test.prov.info <- get.test.prov.info("prov_test1")
 # script data frames for each provenance
 test.origin.scripts.df <- provParseR::get.scripts(test.prov.info)
 
-expected.script.df <- data.frame(script = c("/Users/khanhl.ngo/HarvardForest/provExplainR-dev/inst/testdata/prov_test1/scripts/test1.R",
-		"/Users/khanhl.ngo/HarvardForest/provExplainR-dev/inst/testdata/prov_test1/scripts/test2.R"),
+expected.script.df <- data.frame(script = c(paste0(test.prov.dir, "/scripts/test1.R"),
+		paste0(test.prov.dir, "/scripts/test2.R")),
 		timestamp = c("2019-07-22T11.20.52EDT", "2019-07-22T11.18.37EDT"), stringsAsFactors = FALSE)
 
 # case 0: different content, same name
