@@ -1,12 +1,17 @@
 Package: provExplainR
-Type: Package
-Title: Compare two provenance collections to explain different script outputs
-Version: 0.1.0
-Date: 2019-06-02
-Author: Khanh Ngo
-Maintainer: Khanh Ngo <ngo22k@mtholyoke.edu>
+Title: Compare Two Provenance Collections to Explain Different Script Outputs
+Version: 1.0
+Date: 2020-07-28
+Authors@R: c( person("Barbara", "Lerner", role = "cre",
+                      email = "blerner@mtholyoke.edu"),
+              person("Emery", "Boose", role = "aut",
+                      email = "boose@fas.harvard.edu"),
+              person("Khanh", "Ngo", role = "aut",
+                      email = "ngo22k@mtholyoke.edu")
+		    )
+Copyright: President and Fellows of Harvard College, Trustees of Mount Holyoke College
 Description: 
-    Inspects provenances collected by the 'rdt' or 'rdtLite' packages, 
+    Inspects provenance collected by the 'rdt' or 'rdtLite' packages, 
     or other tools providing compatible PROV JSON output created by 
     the execution of a script, and find differences between two provenance 
     collections. Factors under examination included the hardware and 
@@ -15,8 +20,10 @@ Description:
     in main and sourced scripts. Based on detected changes, provExplainR 
     can be used to study how these factors affect the behavior of 
     the script and generate a promising diagnosis of the causes of different 
-    script results. More information about the RDataTracker family of 
-    provenance tools can be found at <https://github.com/End-to-end-provenance/>.
+    script results. More information about 'rdtLite' and associated tools is available 
+    at <https://github.com/End-to-end-provenance/> and Barbara Lerner, 
+    Emery Boose, and Luis Perez (2018), Using Introspection to Collect 
+    Provenance in R, Informatics, <doi: 10.3390/informatics5010012>.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -30,5 +37,4 @@ Suggests:
     testthat
 URL: https://github.com/End-to-end-provenance
 BugReports: https://github.com/End-to-end-provenance/provExplainR/issues
-RoxygenNote: 6.1.1
-
+RoxygenNote: 7.1.0

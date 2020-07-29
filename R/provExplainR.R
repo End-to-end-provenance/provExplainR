@@ -1,5 +1,5 @@
 # Copyright (C) President and Fellows of Harvard College and 
-# Trustees of Mount Holyoke College, 2019.
+# Trustees of Mount Holyoke College, 2019, 2020.
 
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,16 +17,20 @@
 
 ###############################################################################
 
-#' Provenance explanation function
+#' Provenance comparison functions
 #' 
-#' prov.explain reads two provenance collections and finds differences between these two versions
+#' prov.explain reads two provenance collections and finds differences between these two versions.
+#'
+#' prov.explain and prov.diff.script are intended to help a user determine what
+#' has changed if multiple executions of a script lead to different results.  prov.explain
+#' does this by comparing provenance collected using the rdtLite or rdt packages.  
+#' prov.diff.script compares copies of the R scripts saved in provenance directories
+#' at the time that the scripts were executed. 
 #' 
-#' This function use provenance collected using the rdtLite or rdt packages.
-#' 
-#' Factors under examination includes:
+#' The types of differences that prov.explain can find include:
 #' \itemize{
 #'   \item Environmental information identifying when the scripts were executed, the version of R,
-#' 		the computing systems, the tool and version used to collect the provenances, the location
+#' 		the computing systems, the tool and version used to collect the provenance, the location
 #' 		of the provenance file, and the hash algorithm used to hash data files.
 #'   \item Versions of libraries loaded
 #'   \item Versions of provenance tools
@@ -39,6 +43,7 @@
 #' @export
 #' @examples
 #' \dontrun{prov.explain("first.test.dir", "second.test.dir")}
+#' @rdname explain
 prov.explain <- function (dir1, dir2, save = FALSE){
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
@@ -59,22 +64,22 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 
 #' Provenance Script Diff function
 #' 
-#' prov.diff.script visualizes the differences between the contents of two scripts based on given provenance collections.
+#' prov.diff.script visualizes the differences between two versions of a script 
+#' that were previously executed.
 #' 
-#' This function uses provenance collected using the rdtLite or rdt packages.
-#' 
-#' Users must specify name of the first script, 
-#' first provenance directory path and second provenance directory 
-#' path. Name of second script is optional. If second script 
-#' is specified, provExplainR assumes first script is located in the 
-#' first provenance directory and second script is located in 
-#' the second provenance directory. Otherwise, provExplainR assumes 
-#' both scripts share the same name.
+#' The prov.diff.script compares two versions of a script.
+#' Users must specify the name of the first script, 
+#' the provenance directory associated with the first execution of
+#' the script, and the provenance directory associated with the second execution of
+#' the script. The name of the second script is optional. If it
+#' is omitted, the same script name is looked for in the second provenance
+#' directory
 #' @param first.script name of first script 
-#' @param dir1 path of first provenance directory
-#' @param dir2 path of second provenance directory
-#' @param second.script name of second script 
+#' @param dir1 path to first provenance directory
+#' @param dir2 path to second provenance directory
+#' @param second.script name of second script, if different from the first script's name 
 #' @export
+#' @rdname explain
 prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
@@ -717,9 +722,8 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 #' @param input.df1 data frame of input files in first data provenance collection
 #' @param input.df2 data frame of input files in second data provenance collection
 #' @noRd
-#' 
-#' QUESTION: are inputs in sourced scripts recorded?
 print.input.files.changes <- function (input.df1, input.df2) {
+# QUESTION: are inputs in sourced scripts recorded?
 	cat("\n\nINPUT FILE CHANGES:\n")
 	if(FALSE == check.df.existence("Input file", input.df1, input.df2)) {
 		return (NULL)
@@ -761,17 +765,21 @@ compare.input.files.same.name <- function (same.name.files.df) {
 	if(FALSE == is.null(same.name.files.df) && nrow(same.name.files.df) != 0) {
 		# case: same hash value, thus no change detected
 		same.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x == same.name.files.df$hash.y)
-		for(i in 1:nrow(same.hash.df)) {
-			cat(paste("\nNo change detected in the input file", same.hash.df$name[i]))
+		if (nrow(same.hash.df) > 0) {
+			for(i in 1:nrow(same.hash.df)) {
+				cat(paste("\nNo change detected in the input file", same.hash.df$name[i]))
+			}
 		}
 
 		# case: different hash value, thus content changed
 		different.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x != same.name.files.df$hash.y)
-		for(i in 1:nrow(different.hash.df)) {
-			row <- different.hash.df[i, ]
-			cat(paste("\n\nThe content of the input file", row$name, "has changed"))
-			cat(paste("\n### dir1", row$name, "was last modified at:", row$timestamp.x))
-			cat(paste("\n### dir2", row$name, "was last modified at:", row$timestamp.y))
+		if (nrow(different.hash.df) > 0) {
+			for(i in 1:nrow(different.hash.df)) {
+				row <- different.hash.df[i, ]
+				cat(paste("\n\nThe content of the input file", row$name, "has changed"))
+				cat(paste("\n### dir1", row$name, "was last modified at:", row$timestamp.x))
+				cat(paste("\n### dir2", row$name, "was last modified at:", row$timestamp.y))
+			}
 		}
 	}
 }
