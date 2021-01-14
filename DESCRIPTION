@@ -1,7 +1,7 @@
 Package: provExplainR
-Title: Compare Two Provenance Collections to Explain Different Script Outputs
+Title: Compare Provenance Collections to Explain Changed Script Outputs
 Version: 1.0
-Date: 2020-07-28
+Date: 2020-10-09
 Authors@R: c( person("Barbara", "Lerner", role = "cre",
                       email = "blerner@mtholyoke.edu"),
               person("Emery", "Boose", role = "aut",
@@ -17,13 +17,13 @@ Description:
     collections. Factors under examination included the hardware and 
     software used to execute the script, versions of attached libraries, 
     use of global variables, modified inputs and outputs, and changes 
-    in main and sourced scripts. Based on detected changes, provExplainR 
+    in main and sourced scripts. Based on detected changes, 'provExplainR' 
     can be used to study how these factors affect the behavior of 
     the script and generate a promising diagnosis of the causes of different 
     script results. More information about 'rdtLite' and associated tools is available 
     at <https://github.com/End-to-end-provenance/> and Barbara Lerner, 
     Emery Boose, and Luis Perez (2018), Using Introspection to Collect 
-    Provenance in R, Informatics, <doi: 10.3390/informatics5010012>.
+    Provenance in R, Informatics, <doi:10.3390/informatics5010012>.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true

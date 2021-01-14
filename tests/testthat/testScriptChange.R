@@ -73,26 +73,40 @@ test_that("compares main script and returns corresponding status", {
 })
 
 test_that("displays main script changes: case 0 - different content, same name", {
-	actual.message <- capture_output(print.main.script.change(main.script.change.result = 0, first.main.script.df = first.script.case0.df[1, ], second.main.script.df = second.script.case0.df[1, ]))
-	expected.message <- "\nThe content of the main script MainScript.R has changed\n### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### dir2 main script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	actual.message <- get.main.script.change(main.script.change.result = 0, first.main.script.df = first.script.case0.df[1, ], second.main.script.df = second.script.case0.df[1, ])
+	expected.message <- c("The content of the main script MainScript.R has changed",
+		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
+		"### dir2 main script MainScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 1 - different content, different name", {
-	actual.message <- capture_output(print.main.script.change(main.script.change.result = 1, first.main.script.df = first.script.case1.df[1, ], second.main.script.df = second.script.case1.df[1, ]))
-	expected.message <- "\nMain script has different name\n### dir1 main script name: MainScript.R\n### dir2 main script name: MainRenamedScript.R\nThe content of the main script has changed\n### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### dir2 main script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	actual.message <- get.main.script.change(main.script.change.result = 1, first.main.script.df = first.script.case1.df[1, ], second.main.script.df = second.script.case1.df[1, ])
+	expected.message <- c("Main script has different name",
+		"### dir1 main script name: MainScript.R",
+		"### dir2 main script name: MainRenamedScript.R",
+		"The content of the main script has changed",
+		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
+		"### dir2 main script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 2 - same content, different name", {
-	actual.message <- capture_output(print.main.script.change(main.script.change.result = 2, first.main.script.df = first.script.case2.df[1, ], second.main.script.df = second.script.case2.df[1, ]))
-	expected.message <- "\nMain script has different name\n### dir1 main script name: MainScript.R\n### dir2 main script name: MainRenamedScript.R\nNo change detected in the content of the main script\n### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### dir2 main script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	actual.message <- get.main.script.change(main.script.change.result = 2, first.main.script.df = first.script.case2.df[1, ], second.main.script.df = second.script.case2.df[1, ])
+	expected.message <- c("Main script has different name",
+		"### dir1 main script name: MainScript.R",
+		"### dir2 main script name: MainRenamedScript.R",
+		"No change detected in the content of the main script",
+		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
+		"### dir2 main script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
 })
 
 test_that("displays main script changes: case 3 - same content, same name", {
-	actual.message <- capture_output(print.main.script.change(main.script.change.result = 3, first.main.script.df = first.script.case3.df[1, ], second.main.script.df = second.script.case3.df[1, ]))
-	expected.message <- "\nNo change detected in the content of the main script MainScript.R\n### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT\n### dir2 main script MainScript.R was last modified at: 2019-07-22T12.20.52EDT"
+	actual.message <- get.main.script.change(main.script.change.result = 3, first.main.script.df = first.script.case3.df[1, ], second.main.script.df = second.script.case3.df[1, ])
+	expected.message <- c("No change detected in the content of the main script MainScript.R",
+		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
+		"### dir2 main script MainScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
 })
 
@@ -200,9 +214,14 @@ test_that("displays sourced scripts: same name", {
                  	dir2.timestamp = c("12", "2", "4"), 
                  	dir2.hashValue = c("abc", "efg", "mno"), 
                  	stringsAsFactors = FALSE)
-	actual.message <- capture_output(print.same.name.sourced.scripts(df))
-	expected.message <- "\nSourced script s2.R has changed\n### dir1 s2.R was last modified at: 1\n### dir2 s2.R was last modified at: 2"
-	expected.message <- paste(expected.message, "\nSourced script s3.R has changed\n### dir1 s3.R was last modified at: 2\n### dir2 s3.R was last modified at: 4\nNo change detected in sourced script s1.R", sep = "")
+	actual.message <- get.same.name.sourced.scripts(df)
+	expected.message <- c("Sourced script s2.R has changed",
+						  "### dir1 s2.R was last modified at: 1",
+						  "### dir2 s2.R was last modified at: 2",
+						  "Sourced script s3.R has changed",
+						  "### dir1 s3.R was last modified at: 2",
+						  "### dir2 s3.R was last modified at: 4",
+						  "No change detected in sourced script s1.R")
 	expect_equal(actual.message, expected.message)
 })
 
@@ -214,9 +233,19 @@ test_that("displays sourced scripts: renamed", {
 					dir2.script = c("s1.R", "s3.R"),
 					dir2.timestamp = c("1", "11"),
 					stringsAsFactors = FALSE)
-	actual.message <- capture_output(print.renamed.sourced.scripts(df))
-	expected.message <- "\nSourced script has same content but different names:\n### dir1 sourced script name: s0.R\n### dir2 sourced script name: s1.R\n### s0.R was last modified at: 12\n### s1.R was last modified at: 1"
-	expected.message <- paste(expected.message, "\n\nSourced script has same content but different names:\n### dir1 sourced script name: s2.R\n### dir2 sourced script name: s3.R\n### s2.R was last modified at: 10\n### s3.R was last modified at: 11", sep = "")
+	actual.message <- get.renamed.sourced.scripts(df)
+	expected.message <- c("Sourced script has same content but different names:",
+						  "### dir1 sourced script name: s0.R",
+						  "### dir2 sourced script name: s1.R",
+						  "### s0.R was last modified at: 12",
+						  "### s1.R was last modified at: 1",
+						  "",
+						  "Sourced script has same content but different names:",
+						  "### dir1 sourced script name: s2.R",
+						  "### dir2 sourced script name: s3.R",
+						  "### s2.R was last modified at: 10",
+						  "### s3.R was last modified at: 11", 
+						  "")
 	expect_equal(actual.message, expected.message)
 })
 
@@ -227,15 +256,17 @@ test_that("displays sourced scripts: unmatched", {
 					stringsAsFactors = FALSE)
 
 	# case: non-empty first unmatched data frame
-	actual.message1 <- capture_output(print.unmatched.sourced.scripts(status = "dir1", unmatched.script.df = df))
-	expected.message1 <- "\nSourced scripts in dir1 but not in dir2:\n### s0.R, which was last modified at: 12"
-	expected.message1 <- paste(expected.message1, "\n### s2.R, which was last modified at: 10", sep = "")
+	actual.message1 <- get.unmatched.sourced.scripts(status = "dir1", unmatched.script.df = df)
+	expected.message1 <- c("Sourced scripts in dir1 but not in dir2:",
+						   "### s0.R, which was last modified at: 12",
+						   "### s2.R, which was last modified at: 10")
 	expect_equal(actual.message1, expected.message1)
 
 	# case: non-empty second unmatched data frame
-	actual.message2 <- capture_output(print.unmatched.sourced.scripts(status = "dir2", unmatched.script.df = df))
-	expected.message2 <- "\nSourced scripts in dir2 but not in dir1:\n### s0.R, which was last modified at: 12"
-	expected.message2 <- paste(expected.message2, "\n### s2.R, which was last modified at: 10", sep = "")
+	actual.message2 <- get.unmatched.sourced.scripts(status = "dir2", unmatched.script.df = df)
+	expected.message2 <- c("Sourced scripts in dir2 but not in dir1:",
+						   "### s0.R, which was last modified at: 12",
+						   "### s2.R, which was last modified at: 10")
 	expect_equal(actual.message2, expected.message2)
 })
 

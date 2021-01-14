@@ -58,7 +58,7 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 	if(save == TRUE){
 		save.to.text.file(dir1, dir2)
 	}else{
-		detect.changes(dir1, dir2)
+		return (detect.changes(dir1, dir2))
 	}
 }
 
@@ -115,18 +115,20 @@ prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
 #' @param dir2 path to second prov directory
 #' @noRd
 detect.changes <- function (dir1, dir2){
-	cat(paste("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2))
+	changes <- paste("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2)
 
 	# gets the ProvInfo objects
 	first.prov.info <- get.prov.info.object(dir1)
 	second.prov.info <- get.prov.info.object(dir2)
 
 	# detect changes in different aspects
-	print.script.changes (provParseR::get.scripts(first.prov.info), provParseR::get.scripts(second.prov.info), dir1, dir2)
-	print.library.changes (provParseR::get.libs(first.prov.info), provParseR::get.libs(second.prov.info))
-	print.input.files.changes (provParseR::get.input.files(first.prov.info), provParseR::get.input.files(second.prov.info))
-	print.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
-	print.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
+	changes <- c (changes, get.script.changes (provParseR::get.scripts(first.prov.info), provParseR::get.scripts(second.prov.info), dir1, dir2))
+	changes <- c (changes, get.library.changes (provParseR::get.libs(first.prov.info), provParseR::get.libs(second.prov.info)))
+	changes <- c (changes, get.input.files.changes (provParseR::get.input.files(first.prov.info), provParseR::get.input.files(second.prov.info)))
+	changes <- c (changes, get.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info)))
+	changes <- c (changes, get.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info)))
+
+	return (changes)
 }
 
 #' save.to.text.file outputs comparison results to the console 
@@ -138,19 +140,18 @@ detect.changes <- function (dir1, dir2){
 save.to.text.file <- function(dir1, dir2) {
 	# gets the full path of first provenance directory 
 	explain.file <- paste(dir1, "/prov-explain.txt", sep = "")
-	sink(explain.file, split = TRUE)
-	detect.changes(dir1, dir2)
-	sink()
-	cat(paste("\n\nSaving comparison results in", explain.file))
+	changes <- detect.changes(dir1, dir2)
+	writeLines(changes, explain.file)
+	message(paste("\n\nSaving comparison results in", explain.file))
 }
 
-#' print.library.changes gets changes in library by calling a helper
+#' get.library.changes gets changes in library by calling a helper
 #' method find.library.changes, and prints out the result
 #' @param first.lib.df first library data frame
 #' @param second.lib.df second library data frame
 #' @noRd
-print.library.changes <- function (first.lib.df, second.lib.df){
-	cat ("\n\nLIBRARY CHANGES: ")
+get.library.changes <- function (first.lib.df, second.lib.df){
+	changes <- "\nLIBRARY CHANGES: "
 	# get the list of changes
 	lib.change.list <- find.library.changes(first.lib.df, second.lib.df)
 
@@ -159,26 +160,28 @@ print.library.changes <- function (first.lib.df, second.lib.df){
 	lib.dir2.df <- as.data.frame(lib.change.list[2])
 	lib.dir1.df <- as.data.frame(lib.change.list[3])
 
-	cat ("\nLibrary version differences:\n")
+	changes <- c (changes, "\nLibrary version differences:")
 	if(nrow(lib.difference.df) == 0){
-		cat("No differences in library versions have been detected")
+		changes <- c(changes, "No differences in library versions have been detected")
 	}else{
 		print.data.frame(lib.difference.df, row.names = FALSE)
 	}
 
-	cat ("\n\nLibraries in dir2 but not in dir1:\n")
+	changes <- c (changes, "\nLibraries in dir2 but not in dir1:\n")
 	if(nrow(lib.dir2.df) == 0){
-		cat("No such libraries were found")
+		changes <- c(changes, "No such libraries were found")
 	}else{
 		print.data.frame(lib.dir2.df, row.names = FALSE)
 	}
 
-	cat ("\n\nLibraries in dir1 but not in dir2:\n")
+	changes <- c(changes, "\nLibraries in dir1 but not in dir2:")
 	if(nrow(lib.dir1.df) == 0){
-		cat("No such libraries were found")
+		changes <- c(changes, "No such libraries were found")
 	}else{
 		print.data.frame(lib.dir1.df, row.names = FALSE)
 	}
+	
+	return (changes)
 }
 
 
@@ -224,13 +227,13 @@ find.library.changes <- function (first.lib.df, second.lib.df) {
 	return (list(lib.difference.df, lib.dir2.df, lib.dir1.df))
 }
 
-#' print.environment.changes gets environment changes by calling
+#' get.environment.changes gets environment changes by calling
 #' helper method find.environment.changes and prints out the result
 #' @param first.env.df first environment data frame
 #' @param second.env.df second environment data frame 
 #' @noRd
-print.environment.changes <- function(first.env.df, second.env.df) {
-	cat ("\n\nENVIRONMENT CHANGES: ")
+get.environment.changes <- function(first.env.df, second.env.df) {
+	changes <- ("\nENVIRONMENT CHANGES: ")
 	env.change.list <- find.environment.changes(first.env.df, second.env.df)
 
 	# as.data.frame returns an empty data frame if the given data frame is null
@@ -239,32 +242,33 @@ print.environment.changes <- function(first.env.df, second.env.df) {
 	env.dir2.df <- as.data.frame(env.change.list[2])
 	env.dir1.df <- as.data.frame(env.change.list[3])
 
-	cat("\nValue differences: ") 
+	changes <- c(changes, "Value differences: ") 
 	# prints out the update 
 	if(nrow(env.difference.df) == 0){
-		cat("No differences have been detected")
+		changes <- c(changes, "No differences have been detected")
 	}else{
 		for(i in 1:nrow(env.difference.df)){
-			cat(paste("\nAttribute:", env.difference.df$label[i]))
-			cat(paste("\n### dir1 value:", env.difference.df$dir1.value[i]))
-			cat(paste("\n### dir2 value:", env.difference.df$dir2.value[i]))
-			cat("\n")
+			changes <- c(changes, paste("Attribute:", env.difference.df$label[i]))
+			changes <- c(changes, paste("### dir1 value:", env.difference.df$dir1.value[i]))
+			changes <- c(changes, paste("### dir2 value:", env.difference.df$dir2.value[i]))
 		}
 	}
 
 	# rare case: environment factors in dir2 but not in dir1,
 	# only prints out when found such factor
 	if(nrow(env.dir2.df) != 0){
-		cat("\nAttributes in dir2 but not in dir1:\n")
+		changes <- c(changes, "Attributes in dir2 but not in dir1:\n")
 		print.data.frame(env.dir2.df, row.names = FALSE)
 	}
 
 	# rare case: environment factors in dir1 but not in dir2,
 	# only prints out when found such factor
 	if(nrow(env.dir1.df) != 0){
-		cat("\nAttributes in dir1 but not in dir2:\n")
+		changes <- c(changes, "Attributes in dir1 but not in dir2:\n")
 		print.data.frame(env.dir1.df, row.names = FALSE)
 	}
+	
+	return(changes)
 }
 
 #' find.environment.changes detects changes in the environment in which 
@@ -334,8 +338,8 @@ clean.environment.df <- function(env.df) {
 #' @param first.tool.df first tool data frame
 #' @param second.tool.df second tool data frame
 #' @noRd
-print.prov.tool.changes <- function (first.tool.df, second.tool.df) {
-	cat ("\n\nPROVENANCE TOOL CHANGES: ")
+get.prov.tool.changes <- function (first.tool.df, second.tool.df) {
+	changes <- "\nPROVENANCE TOOL CHANGES: "
 	tool.change.list <- find.prov.tool.changes(first.tool.df, second.tool.df)
 	# if the list returned is null, as.data.frame creates an empty data frame,
 	# so no need to handle null case here
@@ -343,32 +347,33 @@ print.prov.tool.changes <- function (first.tool.df, second.tool.df) {
 	dir2.tool.df <- as.data.frame(tool.change.list[2])
 	dir1.tool.df <- as.data.frame(tool.change.list[3])
 
-	cat("\nTool differences: ")
+	changes <- c(changes, "Tool differences: ")
 	# prints out the update 
 	if(nrow(tool.difference.df) == 0){
-		cat("\nNo differences have been detected")
+		changes <- c(changes, "No differences have been detected")
 	}else{
 		for(i in 1:nrow(tool.difference.df)){
-			cat(paste("\nName:", tool.difference.df$tool.name[i]))
-			cat(paste("\n### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
+			changes <- c(changes, paste("Name:", tool.difference.df$tool.name[i]))
+			changes <- c(changes, paste("### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
 				"; dir1 json version:", tool.difference.df$dir1.json.version[i]))
-			cat(paste("\n### dir2 tool version:", tool.difference.df$dir2.tool.version[i], 
+			changes <- c(changes, paste("### dir2 tool version:", tool.difference.df$dir2.tool.version[i], 
 				"; dir2 json version:", tool.difference.df$dir2.json.version[i]))
-			cat("\n")
 		}
 	}
 
 	# case: tool in dir2 but not in dir1 (for example one used rdt, the other used rdtLite)
 	if(nrow(dir2.tool.df) != 0){
-		cat ("\nTool in dir2 but not in dir1:\n")
+		changes <- c(changes, "Tool in dir2 but not in dir1:\n")
 		print.data.frame(dir2.tool.df, row.names = FALSE)
 	}
 
 	# case: tool in dir1 but not in dir2
 	if(nrow(dir1.tool.df) != 0){
-		cat("\nTool in dir1 but not in dir2:\n")
+		changes <- c(changes, "Tool in dir1 but not in dir2:\n")
 		print.data.frame(dir1.tool.df, row.names = FALSE)
 	}
+	
+	return (changes)
 }
 
 #' prov.tool.changes checks for changes in provenance tool:
@@ -415,19 +420,19 @@ find.prov.tool.changes <- function (first.tool.df, second.tool.df) {
 #' @param dir1 path of first provenance directory
 #' @param dir2 path of second provenance directory 
 #' @noRd
-print.script.changes <- function(first.script.df, second.script.df, dir1, dir2) {
-	cat("\n\nSCRIPT CHANGES: ")
+get.script.changes <- function(first.script.df, second.script.df, dir1, dir2) {
+	changes <- "\nSCRIPT CHANGES: "
 
 	# check the existence of the 2 data frames
 	if(FALSE == check.df.existence("Script", first.script.df, second.script.df)){
-		cat("\nNA")
-		return(NULL)
+		changes <- c(changes, "NA")
+		return(changes)
 	}
 
 	# rare case : no scripts are recorded in the data frame
 	if(FALSE == check.df.empty("script", first.script.df, second.script.df)){
-		cat("\nNA")
-		return(NULL)
+		changes <- c(changes, "\nNA")
+		return(changes)
 	}
 
 	script.change.list <- find.script.changes(first.script.df, second.script.df, dir1, dir2)
@@ -435,14 +440,16 @@ print.script.changes <- function(first.script.df, second.script.df, dir1, dir2) 
 	sourced.script.change.list <- script.change.list[[2]]
 
 	# prints out the result
-	print.main.script.change(main.script.change.result, first.script.df[1, ], second.script.df[1, ])
-	print.same.name.sourced.scripts(same.name.script.df = sourced.script.change.list[[1]])
-	print.renamed.sourced.scripts(renamed.script.df = sourced.script.change.list[[2]])
-	print.unmatched.sourced.scripts(status = "dir1", sourced.script.change.list[[3]])
-	print.unmatched.sourced.scripts(status = "dir2", sourced.script.change.list[[4]])
+	changes <- c(changes, get.main.script.change(main.script.change.result, first.script.df[1, ], second.script.df[1, ]))
+	changes <- c(changes, get.same.name.sourced.scripts(same.name.script.df = sourced.script.change.list[[1]]))
+	changes <- c(changes, get.renamed.sourced.scripts(renamed.script.df = sourced.script.change.list[[2]]))
+	changes <- c(changes, get.unmatched.sourced.scripts(status = "dir1", sourced.script.change.list[[3]]))
+	changes <- c(changes, get.unmatched.sourced.scripts(status = "dir2", sourced.script.change.list[[4]]))
+	
+	return (changes)
 }
 
-#' print.main.script.change prints out changes in main script
+#' get.main.script.change prints out changes in main script
 #' based on the status value returned by compare.main.script method.
 #' The message should display the both name if the script got 
 #' renamed, whether the content of the script has changed, and the 
@@ -451,7 +458,7 @@ print.script.changes <- function(first.script.df, second.script.df, dir1, dir2) 
 #' @param first.main.script.df first data frame with only main script
 #' @param second.main.script.df second data frame with only main script
 #' @noRd
-print.main.script.change <- function(main.script.change.result, first.main.script.df, second.main.script.df){
+get.main.script.change <- function(main.script.change.result, first.main.script.df, second.main.script.df){
 	# extract the name of main scripts from a full path 
 	first.main.script.df$script <- basename(first.main.script.df$script)
 	second.main.script.df$script <- basename(second.main.script.df$script)
@@ -459,34 +466,34 @@ print.main.script.change <- function(main.script.change.result, first.main.scrip
 	renamed <- FALSE
 	# case: script got renamed
 	if(main.script.change.result == 1 || main.script.change.result == 2){
-		cat("\nMain script has different name")
-		cat(paste("\n### dir1 main script name:", first.main.script.df$script))
-		cat(paste("\n### dir2 main script name:", second.main.script.df$script))
+		changes <- "Main script has different name"
+		changes <- c(changes, paste("### dir1 main script name:", first.main.script.df$script))
+		changes <- c(changes, paste("### dir2 main script name:", second.main.script.df$script))
 		renamed <- TRUE
 	}
 
 	# case: the content of script changed
 	if(main.script.change.result == 1 || main.script.change.result == 0){
-		msg <- "\nThe content of the main script"
+		msg <- "The content of the main script"
 		# case: if script was not renamed, prints out the name of the script along with the message
 		if(FALSE == renamed){
-			cat(paste(msg, second.main.script.df$script, "has changed"))
+			changes <- paste(msg, second.main.script.df$script, "has changed")
 		}else{
-			cat(paste(msg, "has changed"))
+			changes <- c(changes, paste(msg, "has changed"))
 		}
 	}else{ # case: the content is not changed (value 2 or 3)
-		msg <- "\nNo change detected in the content of the main script"
+		msg <- "No change detected in the content of the main script"
 		# case: if script was not renamed, prints out the name of the script along with the message
 		if(FALSE == renamed){
-			cat(paste(msg, second.main.script.df$script))
+			changes <- paste(msg, second.main.script.df$script)
 		}else{
-			cat(msg)
+			changes <- c(changes, msg)
 		}
 	}
 		
-	cat(paste("\n### dir1 main script", first.main.script.df$script, "was last modified at:", first.main.script.df$timestamp))
-	cat(paste("\n### dir2 main script", second.main.script.df$script, "was last modified at:", second.main.script.df$timestamp))
-	cat("\n")
+	changes <- c(changes, paste("### dir1 main script", first.main.script.df$script, "was last modified at:", first.main.script.df$timestamp))
+	changes <- c(changes, paste("### dir2 main script", second.main.script.df$script, "was last modified at:", second.main.script.df$timestamp))
+	return (changes)
 }
 
 #' find.script.changes find changes in both main and sourced scripts.
@@ -587,15 +594,17 @@ compare.sourced.scripts <- function(first.sourced.script.df, second.sourced.scri
 	return(list(same.name.script.df, renamed.script.df, first.unmatched.script.df, second.unmatched.script.df))
 }
 
-#' print.same.name.sourced.scripts takes in a script data frame 
+#' get.same.name.sourced.scripts takes in a script data frame 
 #' with same names and reports to users if the scripts has changed 
 #' with the corresponding timestamp
 #' @param same.name.script.df a same-name script data frame 
 #' @noRd
-print.same.name.sourced.scripts <- function(same.name.script.df) {
+get.same.name.sourced.scripts <- function(same.name.script.df) {
 	if(FALSE == is.valid.script.df("same-name scripts", same.name.script.df)) {
-		return ("\nNA")
+		return ("NA")
 	}
+	
+	changes <- character(0)
 
 	# case: data frame must be non-empty
 	if(nrow(same.name.script.df) != 0) {
@@ -603,9 +612,9 @@ print.same.name.sourced.scripts <- function(same.name.script.df) {
 		modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$dir1.hashValue != same.name.script.df$dir2.hashValue)
 		if(nrow(modified.script.df) != 0){
 			for(i in 1:nrow(modified.script.df)){
-				cat(paste("\nSourced script", modified.script.df$script[i], "has changed"))
-			  	cat(paste("\n### dir1", modified.script.df$script[i], "was last modified at:", modified.script.df$dir1.timestamp[i]))
-			  	cat(paste("\n### dir2", modified.script.df$script[i], "was last modified at:", modified.script.df$dir2.timestamp[i]))
+				changes <- c(changes, paste("Sourced script", modified.script.df$script[i], "has changed"))
+			  	changes <- c(changes, paste("### dir1", modified.script.df$script[i], "was last modified at:", modified.script.df$dir1.timestamp[i]))
+			  	changes <- c(changes, paste("### dir2", modified.script.df$script[i], "was last modified at:", modified.script.df$dir2.timestamp[i]))
 			}
 		}
 
@@ -613,58 +622,68 @@ print.same.name.sourced.scripts <- function(same.name.script.df) {
 		identical.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$dir1.hashValue == same.name.script.df$dir2.hashValue)
 		if(nrow(identical.script.df) != 0){
 			for(i in 1:nrow(identical.script.df)){
-				cat(paste("\nNo change detected in sourced script", identical.script.df$script[i]))
+				changes <- c(changes, paste("No change detected in sourced script", identical.script.df$script[i]))
 			}
 		}
 	}
+	
+	else changes <- ""
+	
+	return (changes)
 }
 
-#' print.renamed.sourced.scripts takes in a data frame 
+#' get.renamed.sourced.scripts takes in a data frame 
 #' of renamed scripts and reports changes to users
 #' with the corresponding timestamp
 #' @param renamed.script.df a data frame of renamed scripts
 #' @noRd
-print.renamed.sourced.scripts <- function(renamed.script.df) {
+get.renamed.sourced.scripts <- function(renamed.script.df) {
 	if(FALSE == is.valid.script.df("renamed scripts", renamed.script.df)) {
-		return ("\nNA")
+		return ("NA")
 	}
 
 	# case : data frame must be non-empty 
+	changes <- character(0)
 	if(nrow(renamed.script.df) != 0) {
 		for(i in 1:nrow(renamed.script.df)) {
-			cat(paste("\nSourced script has same content but different names:"))
-			cat(paste("\n### dir1 sourced script name:", renamed.script.df$dir1.script[i]))
-			cat(paste("\n### dir2 sourced script name:", renamed.script.df$dir2.script[i]))
-			cat(paste("\n###", renamed.script.df$dir1.script[i], "was last modified at:", renamed.script.df$dir1.timestamp[i]))
-			cat(paste("\n###", renamed.script.df$dir2.script[i], "was last modified at:", renamed.script.df$dir2.timestamp[i]))
-			cat("\n")
+			changes <- c (changes, paste("Sourced script has same content but different names:"))
+			changes <- c (changes, paste("### dir1 sourced script name:", renamed.script.df$dir1.script[i]))
+			changes <- c (changes, paste("### dir2 sourced script name:", renamed.script.df$dir2.script[i]))
+			changes <- c (changes, paste("###", renamed.script.df$dir1.script[i], "was last modified at:", renamed.script.df$dir1.timestamp[i]))
+			changes <- c (changes, paste("###", renamed.script.df$dir2.script[i], "was last modified at:", renamed.script.df$dir2.timestamp[i]))
+			changes <- c (changes, "")
 		}
 	}
+	return (changes)
 }
 
-#' print.unmatched.sourced.scripts takes in a data frame
+#' get.unmatched.sourced.scripts takes in a data frame
 #' of unmatched scripts, reports changes to users based on 
 #' the given status (either dir1 or dir2)
 #' @param status dir1 or dir2
 #' @param unmatched.script.df data frame of unmatched scripts
 #' @noRd
-print.unmatched.sourced.scripts <- function(status, unmatched.script.df) {
+get.unmatched.sourced.scripts <- function(status, unmatched.script.df) {
 	if(FALSE == is.valid.script.df(aspect = paste(status, "unmatched scripts"), script.df = unmatched.script.df)) {
-		return ("\nNA")
+		return ("NA")
 	}
 
+	changes <- character(0)
+	
 	# case: data frame must be non-empty
 	if(nrow(unmatched.script.df) != 0) {
 		if(status == "dir1") {
-			cat("\nSourced scripts in dir1 but not in dir2:")
+			changes <- "Sourced scripts in dir1 but not in dir2:"
 		}else if (status == "dir2"){
-			cat("\nSourced scripts in dir2 but not in dir1:")
+			changes <- "Sourced scripts in dir2 but not in dir1:"
 		}
 
 		for(i in 1:nrow(unmatched.script.df)) {
-			cat(paste("\n### ", unmatched.script.df$script[i], ", which was last modified at: ", unmatched.script.df$timestamp[i], sep = ""))
+			changes <- c(changes, paste("### ", unmatched.script.df$script[i], ", which was last modified at: ", unmatched.script.df$timestamp[i], sep = ""))
 		}
 	}
+	
+	return (changes)
 }
 
 #' is.valid.script.df is a helper function for script printing functions.
@@ -716,43 +735,54 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 	return (origin.script.df)
 }
 
-#' print.input.files.changes checks if input files in two data provenance
+#' get.input.files.changes checks if input files in two data provenance
 #' collections are different based on their hash values.
 #' NOTE: this function currently does not work for URL as input.
 #' @param input.df1 data frame of input files in first data provenance collection
 #' @param input.df2 data frame of input files in second data provenance collection
 #' @noRd
-print.input.files.changes <- function (input.df1, input.df2) {
+get.input.files.changes <- function (input.df1, input.df2) {
 # QUESTION: are inputs in sourced scripts recorded?
-	cat("\n\nINPUT FILE CHANGES:\n")
 	if(FALSE == check.df.existence("Input file", input.df1, input.df2)) {
-		return (NULL)
+		return ("")
 	}
+
+	changes <- "\nINPUT FILE CHANGES:\n"
 
 	# process input files (not URL)
 	input.files.df1 <- input.df1[input.df1$type == "File", ]
 	input.files.df2 <- input.df2[input.df2$type == "File", ]
 
 	empty <- FALSE
-	if(check.empty.and.print.input.files(input.files.df1, "1") == FALSE) {
+	if(nrow(input.files.df1) == 0) {
+		changes <- c("No input files were found in dir 1\n")
 		empty <- TRUE
 	}
-
-	if(check.empty.and.print.input.files(input.files.df2, "2") == FALSE) {
+	else {
+		changes <- c(changes, get.input.file.changes(input.files.df1, "1"))
+	}
+	
+	if(nrow(input.files.df2) == 0) {
+		changes <- c("No input files were found in dir 2\n")
 		empty <- TRUE
 	}
-
-	if(empty) return(NULL)
+	else {
+		changes <- c(changes, get.input.file.changes(input.files.df2, "2"))
+	}
+	
+	if(empty) return(changes)
 
 	# if reached here, both data frames must have some input files
 	# compare files with same name
 	same.name.files.df <- dplyr::inner_join(input.files.df1, input.files.df2, by = "name")
-	compare.input.files.same.name(same.name.files.df)
+	changes <- c(changes, compare.input.files.same.name(same.name.files.df))
 
 	# compare files with different name
 	different.name.files.df1 <- dplyr::anti_join(input.files.df1, input.files.df2, by = "name")
 	different.name.files.df2 <- dplyr::anti_join(input.files.df2, input.files.df1, by = "name")
-	compare.input.files.different.name(different.name.files.df1, different.name.files.df2)
+	changes <- c(changes, compare.input.files.different.name(different.name.files.df1, different.name.files.df2))
+	
+	return (changes)
 }
 
 #' compare.input.files.same.name takes in a data frame of input files
@@ -762,12 +792,13 @@ print.input.files.changes <- function (input.df1, input.df2) {
 #' @param same.name.files.df data frame of input files with same names 
 #' @noRd
 compare.input.files.same.name <- function (same.name.files.df) {
+	changes <- ""
 	if(FALSE == is.null(same.name.files.df) && nrow(same.name.files.df) != 0) {
 		# case: same hash value, thus no change detected
 		same.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x == same.name.files.df$hash.y)
 		if (nrow(same.hash.df) > 0) {
 			for(i in 1:nrow(same.hash.df)) {
-				cat(paste("\nNo change detected in the input file", same.hash.df$name[i]))
+				changes <- c(changes, paste("No change detected in the input file", same.hash.df$name[i]))
 			}
 		}
 
@@ -776,12 +807,14 @@ compare.input.files.same.name <- function (same.name.files.df) {
 		if (nrow(different.hash.df) > 0) {
 			for(i in 1:nrow(different.hash.df)) {
 				row <- different.hash.df[i, ]
-				cat(paste("\n\nThe content of the input file", row$name, "has changed"))
-				cat(paste("\n### dir1", row$name, "was last modified at:", row$timestamp.x))
-				cat(paste("\n### dir2", row$name, "was last modified at:", row$timestamp.y))
+				changes <- c(changes, paste("\nThe content of the input file", row$name, "has changed"))
+				changes <- c(changes, paste("### dir1", row$name, "was last modified at:", row$timestamp.x))
+				changes <- c(changes, paste("### dir2", row$name, "was last modified at:", row$timestamp.y))
 			}
 		}
 	}
+	
+	return (changes)
 }
 
 #' compare.input.files.different.name takes in 2 data frames of input files:
@@ -794,52 +827,52 @@ compare.input.files.same.name <- function (same.name.files.df) {
 #' @param different.name.files.df2 data frame of input files whose names are exclusive to dir2
 #' @noRd
 compare.input.files.different.name <- function(different.name.files.df1, different.name.files.df2) {
+	changes <- ""
+	
 	# case: files with same content but different name
 	same.hash.df <- dplyr::inner_join(different.name.files.df1, different.name.files.df2, by = "hash")
 	if(FALSE == is.null(same.hash.df) && nrow(same.hash.df) != 0) {
 		for(i in 1:nrow(same.hash.df)) {
-			cat(paste("\nContent of two input files", same.hash.df$name.x[i], "(dir1) and", same.hash.df$name.y[i], "(dir 2) is the same"))
+			changes <- c(changes, paste("Content of two input files", same.hash.df$name.x[i], "(dir1) and", same.hash.df$name.y[i], "(dir 2) is the same"))
 		}
 	}
 
 	# case: files with different hash values and names (dir1)
 	exclusive.files1 <- dplyr::anti_join(different.name.files.df1, different.name.files.df2, by = "hash")
 	if(FALSE == is.null(exclusive.files1) && nrow(exclusive.files1) != 0) {
-		cat("\n\nInput files in dir1 but not in dir2:")
+		changes <- c(changes, "\nInput files in dir1 but not in dir2:")
 		for(i in 1:nrow(exclusive.files1)) {
-			cat(paste("\n### ", exclusive.files1$name[i], ", which was last modified at ", exclusive.files1$timestamp[i], sep = ""))
+			changes <- c(changes, paste("### ", exclusive.files1$name[i], ", which was last modified at ", exclusive.files1$timestamp[i], sep = ""))
 		}
 	}
 
 	# case: files with different hash values and names (dir2)
 	exclusive.files2 <- dplyr::anti_join(different.name.files.df2, different.name.files.df1, by = "hash")
 	if(FALSE == is.null(exclusive.files2) && nrow(exclusive.files2) != 0) {
-		cat("\n\nInput files in dir2 but not in dir1:")
+		changes <- c(changes, "\nInput files in dir2 but not in dir1:")
 		for(i in 1:nrow(exclusive.files2)) {
-			cat(paste("\n### ", exclusive.files2$name[i], ", which was last modified at ", exclusive.files2$timestamp[i], sep = ""))
+			changes <- c(changes, paste("### ", exclusive.files2$name[i], ", which was last modified at ", exclusive.files2$timestamp[i], sep = ""))
 		}
 	}
+	
+	return (changes)
 }
 
-#' check.empty.and.print.input.files prints out all input files recorded in
+#' get.input.file.changes prints out all input files recorded in
 #' a given data frame, corresponding to a folder/directory number. If the 
 #' data frame is empty, a helpful message is returned to user. 
 #' @param input.df data frame of input files
 #' @param dir current working provenance directory
 #' @noRd
-check.empty.and.print.input.files <- function(input.df, dir) {
-	if(nrow(input.df) == 0) {
-		cat(paste("No input files were found in dir", dir, "\n"))
-		return(FALSE)
-	}
-	cat(paste("List of input files in dir", dir, ":\n", sep = ""))
+get.input.file.changes <- function(input.df, dir) {
+	changes <- paste("List of input files in dir", dir, ":\n", sep = "")
 	for(i in 1:nrow(input.df)) {
 		row <- input.df[i, ]
-		cat(paste("### Name:", row$name, "\n"))
-		cat(paste("### Last modification time:", row$timestamp, "\n"))
-		cat(paste("### Location:", row$location, "\n\n"))
+		changes <- c(changes, paste("### Name:", row$name, "\n"))
+		changes <- c(changes, paste("### Last modification time:", row$timestamp, "\n"))
+		changes <- c(changes, paste("### Location:", row$location, "\n\n"))
 	}
-	return(TRUE)
+	return(changes)
 }
 
 
@@ -941,7 +974,7 @@ find.changes.proc.nodes <- function (prov.info1, prov.info2) {
 		|| FALSE == check.df.empty("procedure node", proc.node.df1, proc.node.df2)
 		|| FALSE == check.df.existence("Saved script", scripts.df1, scripts.df2)
 		|| FALSE == check.df.empty("saved script", scripts.df1, scripts.df2)) {
-		return (NULL)
+		return ("")
 	}
 
 	# for each script in each provenance folder, get its array of lines 
@@ -949,6 +982,7 @@ find.changes.proc.nodes <- function (prov.info1, prov.info2) {
 	all.scripts.array2 <- get.array.of.arrays.of.lines(scripts.df2)
 
 	# loop through procedure nodes with the shorter length of the two data frames
+	changes <- ""
 	for(i in 1:min(nrow(proc.node.df1), nrow(proc.node.df2))){
 		proc.node.info1 <- proc.node.df1[i, ]
 		proc.node.info2 <- proc.node.df2[i, ]
@@ -958,21 +992,21 @@ find.changes.proc.nodes <- function (prov.info1, prov.info2) {
 
 		# compare two pieces of information
 		if(identical(detailed.info1, detailed.info2) == FALSE){
-			cat("\nFirst procedure node differences found:")
+			changes <- c("First procedure node differences found:")
 			# helpful output here (subject to change)
-			cat("\n### Line", proc.node.info1$startLine, "in script", basename(scripts.df1$script[proc.node.info1$scriptNum]))
-			cat("\n### versus line", proc.node.info2$startLine, "in script", basename(scripts.df2$script[proc.node.info2$scriptNum]))
-			return(cat(""))
+			changes <- c("### Line", proc.node.info1$startLine, "in script", basename(scripts.df1$script[proc.node.info1$scriptNum]))
+			changes <- c("### versus line", proc.node.info2$startLine, "in script", basename(scripts.df2$script[proc.node.info2$scriptNum]))
+			return(changes)
 		}
 	}
 
 	# lines are identical so far. Compare lengths
 	if(nrow(proc.node.df1) == nrow(proc.node.df2)) {
-		return(cat("\nAll procedure nodes of dir1 and dir2 are identical"))
+		return("All procedure nodes of dir1 and dir2 are identical")
 	}
 
 	# lengths are different
-	cat("\nFirst procedure node differences found:")
+	changes <- c("First procedure node differences found:")
 	if(nrow(proc.node.df1) > nrow(proc.node.df2)) {
 		temp.proc <- proc.node.df1[nrow(proc.node.df2) + 1, ]
 		temp.script <- scripts.df1
@@ -980,7 +1014,8 @@ find.changes.proc.nodes <- function (prov.info1, prov.info2) {
 		temp.proc <- proc.node.df2[nrow(proc.node.df1) + 1, ]
 		temp.script <- scripts.df2
 	}
-	cat("\n### Line", temp.proc$startLine, "in script", basename(temp.script$script[temp.proc$scriptNum]))
+	changes <- c("### Line", temp.proc$startLine, "in script", basename(temp.script$script[temp.proc$scriptNum]))
+	return(changes)
 }
 
 #' get.proc.node.full.info gets the detailed lines about a given procedure node.
