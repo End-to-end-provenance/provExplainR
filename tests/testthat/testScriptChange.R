@@ -75,6 +75,7 @@ test_that("compares main script and returns corresponding status", {
 test_that("displays main script changes: case 0 - different content, same name", {
 	actual.message <- get.main.script.change(main.script.change.result = 0, first.main.script.df = first.script.case0.df[1, ], second.main.script.df = second.script.case0.df[1, ])
 	expected.message <- c("The content of the main script MainScript.R has changed",
+	    "Run prov.diff.script to see the changes.",
 		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
 		"### dir2 main script MainScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
@@ -86,6 +87,7 @@ test_that("displays main script changes: case 1 - different content, different n
 		"### dir1 main script name: MainScript.R",
 		"### dir2 main script name: MainRenamedScript.R",
 		"The content of the main script has changed",
+	    "Run prov.diff.script to see the changes.",
 		"### dir1 main script MainScript.R was last modified at: 2019-07-22T11.20.52EDT",
 		"### dir2 main script MainRenamedScript.R was last modified at: 2019-07-22T12.20.52EDT")
 	expect_equal(actual.message, expected.message)
@@ -216,9 +218,11 @@ test_that("displays sourced scripts: same name", {
                  	stringsAsFactors = FALSE)
 	actual.message <- get.same.name.sourced.scripts(df)
 	expected.message <- c("Sourced script s2.R has changed",
+	                      "Run prov.diff.script to see the changes.",
 						  "### dir1 s2.R was last modified at: 1",
 						  "### dir2 s2.R was last modified at: 2",
 						  "Sourced script s3.R has changed",
+	                      "Run prov.diff.script to see the changes.",
 						  "### dir1 s3.R was last modified at: 2",
 						  "### dir2 s3.R was last modified at: 4",
 						  "No change detected in sourced script s1.R")
