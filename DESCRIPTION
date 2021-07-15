@@ -37,4 +37,4 @@ Suggests:
     testthat
 URL: https://github.com/End-to-end-provenance
 BugReports: https://github.com/End-to-end-provenance/provExplainR/issues
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
