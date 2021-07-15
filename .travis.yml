@@ -13,6 +13,7 @@ r_packages:
   - rdtLite
   - provParseR
   - testthat
+  - stringr
 
 notifications:
   slack: endtoendprovenance:DNYqXZWhV1c3eRhkjGYyjCEv

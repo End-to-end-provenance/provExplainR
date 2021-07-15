@@ -5,4 +5,7 @@
 .*\.tar\.gz
 .git
 build.xml
-
+README.md
+^.*\.png$
+^.*\.Rcheck$
+^testscripts$
