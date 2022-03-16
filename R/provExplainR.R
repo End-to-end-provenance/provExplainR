@@ -74,25 +74,46 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 #' the script. The name of the second script is optional. If it
 #' is omitted, the same script name is looked for in the second provenance
 #' directory
-#' @param first.script name of first script 
 #' @param dir1 path to first provenance directory
 #' @param dir2 path to second provenance directory
-#' @param second.script name of second script, if different from the first script's name 
+#' @param first.script name of first script.  If no value is passed in, it will use the
+#'    main script
+#' @param second.script name of second script.  If both first and second script name
+#'    are NULL, it will use the main script form the second directory.  If second
+#'    script name is NULL, but first script name is not, it will use first script name.
 #' @export
 #' @rdname explain
-prov.diff.script <- function(first.script, dir1, dir2, second.script = NULL) {
+prov.diff.script <- function(dir1, dir2, first.script = NULL, second.script = NULL) {
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
 
 	# extract script name and change paths to first script saved in prov folders
-	first.script <- basename(first.script)
+	if (FALSE == is.null(first.script)){
+	    use.main.script <- FALSE
+		first.script <- basename(first.script)
+	}
+	else {
+		use.main.script <- TRUE
+		first.prov.info <- get.prov.info.object(dir1)
+		environment <- provParseR::get.environment(first.prov.info)
+		script.path <- environment[environment$label == "script", ]$value
+		first.script <- basename(script.path)
+	}
 	first.full.script <- paste(dir1, "/scripts/", first.script, sep = "")
 	
 	# extract script name and change paths to second script saved in prov folders
 	if(FALSE == is.null(second.script)){
 		second.script <- basename(second.script)
 	}else{
-		second.script <- first.script
+	    if (use.main.script) {
+			second.prov.info <- get.prov.info.object(dir2)
+			environment <- provParseR::get.environment(second.prov.info)
+			script.path <- environment[environment$label == "script", ]$value
+			second.script <- basename(script.path)
+	    }
+	    else {
+			second.script <- first.script
+		}
 	}
 	second.full.script <- paste(dir2, "/scripts/", second.script, sep = "")
 
