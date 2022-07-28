@@ -1,5 +1,5 @@
 # Copyright (C) President and Fellows of Harvard College and 
-# Trustees of Mount Holyoke College, 2019, 2020.
+# Trustees of Mount Holyoke College, 2019, 2020, 2021, 2022.
 
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -221,7 +221,10 @@ find.library.changes <- function (first.lib.df, second.lib.df) {
 		return(NULL)
 	}
 
-	# the input data frames have 3 columns: id, name, version
+	# keep the 3 columns we are interested in: id, name, version
+	first.lib.df <- subset(first.lib.df, select = c("id", "name", "version"))
+	second.lib.df <- subset(second.lib.df, select = c("id", "name", "version"))
+
 	# removes unneccesary id rows
 	first.lib.df <- subset(first.lib.df, select = -1)
 	second.lib.df <- subset(second.lib.df, select = -1)
