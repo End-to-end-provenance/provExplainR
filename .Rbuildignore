@@ -9,3 +9,4 @@ README.md
 ^.*\.png$
 ^.*\.Rcheck$
 ^testscripts$
+^\.github$
