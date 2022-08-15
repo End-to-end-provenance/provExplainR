@@ -530,9 +530,12 @@ find.script.changes <- function(first.script.df, second.script.df, dir1, dir2) {
 	first.script.df <- get.copied.script.path(dir1, first.script.df)
 	second.script.df <- get.copied.script.path(dir2, second.script.df)
 
-	# generate hash value for each script in the data frame
-	first.script.df <- compute.script.hash.value(first.script.df)
-	second.script.df <- compute.script.hash.value(second.script.df)
+	# If there are stored hash values, use those.  Otherwise, generate hash value 
+	# for each script to be sure the same algorithm is being used for both.
+	if (first.script.df$hash != "" || second.script.df$hash != "") {
+		first.script.df <- compute.script.hash.value(first.script.df)
+		second.script.df <- compute.script.hash.value(second.script.df)
+	}
 
 	#find script changes
 	main.script.result <- compare.main.script(first.script.df[1, ], second.script.df[1, ])
@@ -554,22 +557,22 @@ compare.main.script <- function(first.main.script.df, second.main.script.df) {
 	first.main.script.df$script <- basename(first.main.script.df$script)
 	second.main.script.df$script <- basename(second.main.script.df$script)
 
-	if(first.main.script.df$hashValue != second.main.script.df$hashValue
+	if(first.main.script.df$hash != second.main.script.df$hash
 		&& first.main.script.df$script == second.main.script.df$script){
 		return (0)
 	}
 
-	if(first.main.script.df$hashValue != second.main.script.df$hashValue
+	if(first.main.script.df$hash != second.main.script.df$hash
 		&& first.main.script.df$script != second.main.script.df$script){
 		return (1)
 	}
 
-	if(first.main.script.df$hashValue == second.main.script.df$hashValue
+	if(first.main.script.df$hash == second.main.script.df$hash
 		&& first.main.script.df$script != second.main.script.df$script){
 		return (2)
 	}
 
-	if(first.main.script.df$hashValue == second.main.script.df$hashValue
+	if(first.main.script.df$hash == second.main.script.df$hash
 		&& first.main.script.df$script == second.main.script.df$script){
 		return (3)
 	}
@@ -735,7 +738,7 @@ compute.script.hash.value <- function(script.df) {
 		digest::digest(file = X, algo = "md5")
 	})
 
-	script.df$hashValue <- hash.values.vector
+	script.df$hash <- hash.values.vector
 	return (script.df)
 }
 
