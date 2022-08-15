@@ -7,7 +7,7 @@
 \usage{
 prov.explain(dir1, dir2, save = FALSE)
 
-prov.diff.script(first.script, dir1, dir2, second.script = NULL)
+prov.diff.script(dir1, dir2, first.script = NULL, second.script = NULL)
 }
 \arguments{
 \item{dir1}{path to first provenance directory}
@@ -16,9 +16,12 @@ prov.diff.script(first.script, dir1, dir2, second.script = NULL)
 
 \item{save}{if true saves the report to the file prov-explain.txt in the first directory}
 
-\item{first.script}{name of first script}
+\item{first.script}{name of first script.  If no value is passed in, it will use the
+main script}
 
-\item{second.script}{name of second script, if different from the first script's name}
+\item{second.script}{name of second script.  If both first and second script name
+are NULL, it will use the main script form the second directory.  If second
+script name is NULL, but first script name is not, it will use first script name.}
 }
 \description{
 prov.explain reads two provenance collections and finds differences between these two versions.
