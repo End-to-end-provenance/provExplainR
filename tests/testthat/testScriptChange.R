@@ -57,14 +57,6 @@ second.script.case3.df$script[1] = first.script.case3.df$script[1]
 # 	expect_equivalent(actual.test.df, expected.script.df)
 # })
 
-test_that("correctly computes hash values for each script", {
-	skip_on_travis()
-	actual.script.df <- expected.script.df
-	expected.script.df$hashValue <- c("7be48a56beba80e814c1f57887b3dba1", "d24ab89249763832d467b7d36ce7e6db")
-	actual.script.df <- compute.script.hash.value(script.df = actual.script.df)
-	expect_equivalent(actual.script.df, expected.script.df)
-})
-
 test_that("compares main script and returns corresponding status", {
 	expect_equal(compare.main.script(first.main.script.df = first.script.case0.df[1, ], second.main.script.df = second.script.case0.df[1, ]), 0)
 	expect_equal(compare.main.script(first.main.script.df = first.script.case1.df[1, ], second.main.script.df = second.script.case1.df[1, ]), 1)
