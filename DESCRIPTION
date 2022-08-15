@@ -1,7 +1,7 @@
 Package: provExplainR
 Title: Compare Provenance Collections to Explain Changed Script Outputs
 Version: 1.1.1
-Date: 2022-03-16
+Date: 2022-08-15
 Authors@R: c( person("Barbara", "Lerner", role = "cre",
                       email = "blerner@mtholyoke.edu"),
               person("Emery", "Boose", role = "aut",
