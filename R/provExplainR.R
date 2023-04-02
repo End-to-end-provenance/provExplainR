@@ -44,7 +44,7 @@
 #' @examples
 #' \dontrun{prov.explain("first.test.dir", "second.test.dir")}
 #' @rdname explain
-prov.explain <- function (dir1, dir2, save = FALSE){
+prov.explain <- function (dir1, dir2, compare_errors = FALSE, testing = TRUE, save = FALSE){
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
 
@@ -53,12 +53,19 @@ prov.explain <- function (dir1, dir2, save = FALSE){
 		warning (paste(dir1, "and", dir2, "are the same directories\n"))
 		return (NA)
 	}
+  if (testing) {
+    first.prov.info <- get.prov.info.object(dir1)
+    second.prov.info <- get.prov.info.object(dir2)
+    #return(get.error.differences(first.prov.info, second.prov.info))
+    return(get.data.node.diffs(first.prov.info, second.prov.info))
+#    get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
+  }
 
 	# detecting changes 
 	if(save == TRUE){
 		save.to.text.file(dir1, dir2)
 	}else{
-		detect.changes(dir1, dir2)
+		detect.changes(dir1, dir2, compare_errors)
 	}
 }
 
@@ -135,7 +142,7 @@ prov.diff.script <- function(dir1, dir2, first.script = NULL, second.script = NU
 #' @param dir1 path to first prov directory
 #' @param dir2 path to second prov directory
 #' @noRd
-detect.changes <- function (dir1, dir2){
+detect.changes <- function (dir1, dir2, compare_errors){
 	cat("\nYou entered:\ndir1 =", dir1, "\ndir2 =", dir2)
 
 	# gets the ProvInfo objects
@@ -148,6 +155,11 @@ detect.changes <- function (dir1, dir2){
 	get.input.files.changes (provParseR::get.input.files(first.prov.info), provParseR::get.input.files(second.prov.info))
 	get.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	get.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
+	
+	
+	if (compare_errors){
+	  get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
+	}
 }
 
 #' save.to.text.file outputs comparison results to the console 
@@ -1064,6 +1076,87 @@ get.array.of.arrays.of.lines <- function(scripts.df) {
 		return(lines)
 	})
 	return(array.of.arrays)
+}
+
+get.error.differences <- function(first.prov.info, second.prov.info){
+  error.nodes.1 <- provParseR::get.error.nodes(first.prov.info)
+  error.nodes.2 <- provParseR::get.error.nodes(second.prov.info)
+  
+  #based off of provSummarize
+  
+  # Get the proc-data edges and the proc nodes
+  proc.data.edges.1 <- provParseR::get.proc.data(first.prov.info)
+  proc.nodes.1 <- provParseR::get.proc.nodes(first.prov.info)
+  
+  proc.data.edges.2 <- provParseR::get.proc.data(second.prov.info)
+  proc.nodes.2 <- provParseR::get.proc.nodes(second.prov.info)
+  
+  # Merge the data frames so that we have the output and the operation that
+  # produced that output in 1 row
+  output.report.1 <- merge(error.nodes.1, proc.data.edges.1, by.x="id", by.y="entity")
+
+  output.report.1 <- merge(output.report.1, proc.nodes.1, by.x="activity", by.y="id")
+  output.report.2 <- merge(error.nodes.2, proc.data.edges.2, by.x="id", by.y="entity")
+  output.report.2 <- merge(output.report.2, proc.nodes.2, by.x="activity", by.y="id")
+
+  # Get the scripts and remove the directory name
+  scripts.1 <- provParseR::get.scripts(first.prov.info)
+  scripts.1 <- sub(".*/", "", scripts.1$script)
+  
+  scripts.2 <- provParseR::get.scripts(second.prov.info)
+  scripts.2 <- sub(".*/", "", scripts.2$script)
+  
+  cat("ERROR COMPARISONS:\n")
+  
+  if (identical(output.report.1, output.report.2)){
+    
+    cat("No difference in error outputs found.\n")
+  } else {
+    cat("Difference in errors found.\n")
+    if (nrow(error.nodes.1) >= nrow(error.nodes.2)){
+      end <-  nrow(error.nodes.1)
+      using.1 <- TRUE
+    } else {
+      end = nrow(error.nodes.2)
+      using.1 <- FALSE
+    }
+    for (i in 1:end){ #fix for better comparison for when diff lengths
+      script.name.1 <- scripts.1[output.report.1[i, "scriptNum"]]
+      script.name.2 <- scripts.2[output.report.2[i, "scriptNum"]]
+      if(!identical(output.report.1[i, "value"], output.report.2[i, "value"])){
+        msg.1 <- output.report.1[i, "value"]
+        msg.2 <- output.report.2[i, "value"]
+        cat("First error difference:\n")
+        
+        if(!is.na(output.report.1[i, "startLine"]) && !is.na(output.report.2[i, "startLine"])){
+          sl.1 <- output.report.1[i, "startLine"]
+          sl.2 <- output.report.2[i, "startLine"]
+          if (using.1){
+            cat(paste("Line ", sl.1, " of ", script.name.1, " reported ",
+                               msg.1, " while ", script.name.2, " reported "))
+            if (!is.na(msg.2)){
+              cat(paste(msg.2))
+            } else {
+              cat(paste("nothing."))
+            }
+          } else {
+            cat(paste("Line ", sl.2, " of ", script.name.2, " reported the following: '",
+                               msg.2, "' while ", script.name.1, " reported "))
+            if (!is.na(msg.1)){
+              cat(msg.2)
+            } else {
+              cat("nothing")
+            }
+          }
+        }
+      }
+    }
+
+  }
+  return(0)
+  
+ #use get.proc.data() to find where errors are coming from? 
+  
 }
 
 
