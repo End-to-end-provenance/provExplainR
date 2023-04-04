@@ -44,7 +44,7 @@
 #' @examples
 #' \dontrun{prov.explain("first.test.dir", "second.test.dir")}
 #' @rdname explain
-prov.explain <- function (dir1, dir2, compare_errors = FALSE, testing = TRUE, save = FALSE){
+prov.explain <- function (dir1, dir2, testing = FALSE, save = FALSE){
 	# check the existence of two given directories
 	check.dir.existence(dir1, dir2)
 
@@ -56,7 +56,6 @@ prov.explain <- function (dir1, dir2, compare_errors = FALSE, testing = TRUE, sa
   if (testing) {
     first.prov.info <- get.prov.info.object(dir1)
     second.prov.info <- get.prov.info.object(dir2)
-    #return(get.error.differences(first.prov.info, second.prov.info))
     return(get.data.differences(first.prov.info, second.prov.info))
 #    get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
   }
@@ -155,11 +154,8 @@ detect.changes <- function (dir1, dir2, compare_errors){
 	get.input.files.changes (provParseR::get.input.files(first.prov.info), provParseR::get.input.files(second.prov.info))
 	get.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	get.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
+	get.data.differences(first.prov.info, second.prov.info)
 	
-	
-	if (compare_errors){
-	  get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
-	}
 }
 
 #' save.to.text.file outputs comparison results to the console 
@@ -1175,7 +1171,7 @@ compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scrip
   cat("\n")
 }
 compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.2){
-  cat("DATA NODE DIFFERENCE DETECTED:\n")
+  cat("\nDATA NODE DIFFERENCE DETECTED:\n")
   
   if (nrow(data.report.1) >= nrow(data.report.2)){
     end <-  nrow(data.report.1)
