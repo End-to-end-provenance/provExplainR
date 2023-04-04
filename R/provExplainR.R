@@ -57,7 +57,7 @@ prov.explain <- function (dir1, dir2, compare_errors = FALSE, testing = TRUE, sa
     first.prov.info <- get.prov.info.object(dir1)
     second.prov.info <- get.prov.info.object(dir2)
     #return(get.error.differences(first.prov.info, second.prov.info))
-    return(get.data.node.diffs(first.prov.info, second.prov.info))
+    return(get.data.differences(first.prov.info, second.prov.info))
 #    get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
   }
 
@@ -1078,86 +1078,166 @@ get.array.of.arrays.of.lines <- function(scripts.df) {
 	return(array.of.arrays)
 }
 
-get.error.differences <- function(first.prov.info, second.prov.info){
+get.data.differences <- function(first.prov.info, second.prov.info){
+  
   error.nodes.1 <- provParseR::get.error.nodes(first.prov.info)
   error.nodes.2 <- provParseR::get.error.nodes(second.prov.info)
+  data.nodes.1 <- provParseR::get.data.nodes(first.prov.info)
+  data.nodes.2 <- provParseR::get.data.nodes(second.prov.info)
   
-  #based off of provSummarize
-  
-  # Get the proc-data edges and the proc nodes
-  proc.data.edges.1 <- provParseR::get.proc.data(first.prov.info)
-  proc.nodes.1 <- provParseR::get.proc.nodes(first.prov.info)
-  
-  proc.data.edges.2 <- provParseR::get.proc.data(second.prov.info)
-  proc.nodes.2 <- provParseR::get.proc.nodes(second.prov.info)
-  
-  # Merge the data frames so that we have the output and the operation that
-  # produced that output in 1 row
-  output.report.1 <- merge(error.nodes.1, proc.data.edges.1, by.x="id", by.y="entity")
-
-  output.report.1 <- merge(output.report.1, proc.nodes.1, by.x="activity", by.y="id")
-  output.report.2 <- merge(error.nodes.2, proc.data.edges.2, by.x="id", by.y="entity")
-  output.report.2 <- merge(output.report.2, proc.nodes.2, by.x="activity", by.y="id")
-
-  # Get the scripts and remove the directory name
-  scripts.1 <- provParseR::get.scripts(first.prov.info)
-  scripts.1 <- sub(".*/", "", scripts.1$script)
-  
-  scripts.2 <- provParseR::get.scripts(second.prov.info)
-  scripts.2 <- sub(".*/", "", scripts.2$script)
-  
-  cat("ERROR COMPARISONS:\n")
-  
-  if (identical(output.report.1, output.report.2)){
+  if (!identical(data.nodes.1, data.nodes.2)){
+    #based off of provSummarize
     
-    cat("No difference in error outputs found.\n")
-  } else {
-    cat("Difference in errors found.\n")
-    if (nrow(error.nodes.1) >= nrow(error.nodes.2)){
-      end <-  nrow(error.nodes.1)
-      using.1 <- TRUE
-    } else {
-      end = nrow(error.nodes.2)
-      using.1 <- FALSE
+    proc.data.edges.1 <- provParseR::get.proc.data(first.prov.info)
+    proc.nodes.1 <- provParseR::get.proc.nodes(first.prov.info)
+    
+    proc.data.edges.2 <- provParseR::get.proc.data(second.prov.info)
+    proc.nodes.2 <- provParseR::get.proc.nodes(second.prov.info)
+    
+    # Merge the data frames so that we have the output and the operation that
+    # produced that output in 1 row
+    error.report.1 <- merge(error.nodes.1, proc.data.edges.1, by.x="id", by.y="entity")
+    error.report.1 <- merge(error.report.1, proc.nodes.1, by.x="activity", by.y="id")
+    error.report.2 <- merge(error.nodes.2, proc.data.edges.2, by.x="id", by.y="entity")
+    error.report.2 <- merge(error.report.2, proc.nodes.2, by.x="activity", by.y="id")
+    
+    data.nodes.1 <- data.nodes.1[data.nodes.1$type == "Data",]
+    data.nodes.2 <- data.nodes.2[data.nodes.2$type == "Data",]
+    
+    data.report.1 <- merge(data.nodes.1, proc.data.edges.1, by.x="id", by.y="entity")
+    data.report.1 <- merge(data.report.1, proc.nodes.1, by.x="activity", by.y="id")
+    data.report.2 <- merge(data.nodes.2, proc.data.edges.2, by.x="id", by.y="entity")
+    data.report.2 <- merge(data.report.2, proc.nodes.2, by.x="activity", by.y="id")
+    
+    data.report.1 <- subset(data.report.1, select = c("activity", "id", "name.x", "value", 
+                                                     "valType", "type.x", "scope", "fromEnv",
+                                                     "id.y", "name.y", "type.y", "scriptNum", "startLine", "endLine"))
+    data.report.2 <- subset(data.report.2, select = c("activity", "id", "name.x", "value", 
+                                                      "valType", "type.x", "scope", "fromEnv",
+                                                      "id.y", "name.y", "type.y", "scriptNum", "startLine", "endLine"))
+    
+    # Get the scripts and remove the directory name
+    scripts.1 <- provParseR::get.scripts(first.prov.info)
+    scripts.1 <- sub(".*/", "", scripts.1$script)
+    
+    scripts.2 <- provParseR::get.scripts(second.prov.info)
+    scripts.2 <- sub(".*/", "", scripts.2$script)
+    
+    if (!identical(error.report.1, error.report.2)){
+      compare.error.nodes(error.report.1, error.report.2,
+                          scripts.1, scripts.2)
     }
-    for (i in 1:end){ #fix for better comparison for when diff lengths
-      script.name.1 <- scripts.1[output.report.1[i, "scriptNum"]]
-      script.name.2 <- scripts.2[output.report.2[i, "scriptNum"]]
-      if(!identical(output.report.1[i, "value"], output.report.2[i, "value"])){
-        msg.1 <- output.report.1[i, "value"]
-        msg.2 <- output.report.2[i, "value"]
-        cat("First error difference:\n")
-        
-        if(!is.na(output.report.1[i, "startLine"]) && !is.na(output.report.2[i, "startLine"])){
-          sl.1 <- output.report.1[i, "startLine"]
-          sl.2 <- output.report.2[i, "startLine"]
-          if (using.1){
-            cat(paste("Line ", sl.1, " of ", script.name.1, " reported ",
-                               msg.1, " while ", script.name.2, " reported "))
-            if (!is.na(msg.2)){
-              cat(paste(msg.2))
-            } else {
-              cat(paste("nothing."))
-            }
+    if (!identical(data.report.1, data.report.2)){
+      compare.data.nodes(data.report.1, data.report.2,
+                         scripts.1, scripts.2)
+    }
+  }
+}
+
+compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scripts.2){
+  cat("ERROR DIFFERENCE DETECTED:\n")
+  if (nrow(error.report.1) >= nrow(error.report.2)){
+    end <-  nrow(error.report.1)
+    using.1 <- TRUE
+  } else {
+    end = nrow(error.report.2)
+    using.1 <- FALSE
+  }
+  for (i in 1:end){ #fix for better comparison for when diff lengths
+    script.name.1 <- scripts.1[error.report.1[i, "scriptNum"]]
+    script.name.2 <- scripts.2[error.report.2[i, "scriptNum"]]
+    if(!identical(error.report.1[i, "value"], error.report.2[i, "value"])){
+      msg.1 <- error.report.1[i, "value"]
+      msg.2 <- error.report.2[i, "value"]
+      if(!is.na(error.report.1[i, "startLine"]) && !is.na(error.report.2[i, "startLine"])){
+        sl.1 <- error.report.1[i, "startLine"]
+        sl.2 <- error.report.2[i, "startLine"]
+        if (using.1){
+          cat(paste("Line ", sl.1, " of file in Directory 1:", script.name.1, " reported ",
+                    msg.1, " while in Directory 2:", script.name.2, " reported "))
+          if (!is.na(msg.2)){
+            cat(paste(msg.2))
           } else {
-            cat(paste("Line ", sl.2, " of ", script.name.2, " reported the following: '",
-                               msg.2, "' while ", script.name.1, " reported "))
-            if (!is.na(msg.1)){
-              cat(msg.2)
-            } else {
-              cat("nothing")
-            }
+            cat(paste("nothing."))
+          }
+        } else {
+          cat(paste("Line ", sl.2, " of file in Directory 1:", script.name.2, " reported the following: '",
+                    msg.2, "' while file in Directory 2:", script.name.1, " reported "))
+          if (!is.na(msg.1)){
+            cat(msg.2)
+          } else {
+            cat("nothing")
           }
         }
       }
     }
-
   }
-  return(0)
+  cat("\n")
+}
+compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.2){
+  cat("DATA NODE DIFFERENCE DETECTED:\n")
   
- #use get.proc.data() to find where errors are coming from? 
+  if (nrow(data.report.1) >= nrow(data.report.2)){
+    end <-  nrow(data.report.1)
+    using.1 <- TRUE
+  } else {
+    end = nrow(data.report.2)
+    using.1 <- FALSE
+  }
+  for (i in 1:end){
+    script.name.1 <- scripts.1[data.report.1[i, "scriptNum"]]
+    script.name.2 <- scripts.2[data.report.2[i, "scriptNum"]]
+    
+    if (!identical(data.report.1[i,], data.report.2[i,])){
+      #File has node that other does not
+      if (using.1 && is.na(data.report.2[i, "id"])){
+        cat("Data node", data.report.1[i, "id"], "in Directory 1 File", script.name.1, 
+        "does not exist in Directory 2 File", script.name.2)
+      } else if (!using.1 && is.na(data.report.1[i, "id"])){
+        cat("Data node", data.report.2[i, "id"], "in Directory 2 File", script.name.2, 
+            "does not exist in Directory 1 File", script.name.1)
+      }
+      #Comparing file 1 to file 2, in this case, directory 1 data node is different from directory 2 data node
+      diff.vector <- ""
+      name.diff <- ""
+      value.diff <- ""
+      valType.diff <- ""
+      
+      if (!identical(data.report.1[i, "name.x"], data.report.2[i, "name.x"])){
+        diff.vector <- paste(diff.vector, "name")
+        name.diff <- paste(data.report.1[i, "id"] ,"Name:", data.report.1[i, "name"], "\n ", 
+                           data.report.2[i, "id"],"Name:", data.report.2[i, "name"], "\n")
+      }
+      if (!identical(data.report.1[i, "value"], data.report.2[i, "value"])){
+        diff.vector <- paste(diff.vector, "value")
+        value.diff <- paste(data.report.1[i, "id"] ,"Value:", data.report.1[i, "value"], "\n ", 
+                            data.report.2[i, "id"],"Value:", data.report.2[i, "value"], "\n")
+      }
+      if (!identical(data.report.1[i, "valType"], data.report.2[i, "valType"])){
+        diff.vector <- paste(diff.vector, "valType")
+        valType.diff <- paste(data.report.1[i, "id"] ,"valType:", data.report.1[i, "valType"], "\n ", 
+                              data.report.2[i, "id"],"valType:", data.report.2[i, "valType"], "\n")
+      }
+      cat(data.report.1[i, "id"], "from Line", data.report.1[i, "startLine"], 
+          "in Directory 1 File", script.name.1, 
+          "has different:", diff.vector, "\ncompared to", 
+          data.report.2[i, "id"], "from Line", data.report.2[i, "startLine"], 
+          "in Directory 2 File", script.name.2, "\n")
+      cat(paste(name.diff, value.diff, valType.diff))
+      break
+    }
+  }
+  
+  
   
 }
+  
+
+  
+
+
+
+
 
 
 
