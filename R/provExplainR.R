@@ -36,6 +36,15 @@
 #'   \item Versions of provenance tools
 #'   \item Contents and names of main and sourced scripts 
 #' }
+
+#SCRIPT - 0
+#LIBRARY - 1
+#INPUT FILES - 2
+#ENVIRONMENT - 3
+#PROV TOOL - 4
+#DATA - 5
+diffs.vector <<- c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)
+
 #' 
 #' @param dir1 path of first provenance directory
 #' @param dir2 path of second provenance directory
@@ -155,6 +164,7 @@ detect.changes <- function (dir1, dir2, compare_errors){
 	get.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	get.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
 	get.data.differences(first.prov.info, second.prov.info)
+	get.summary()
 	
 }
 
@@ -179,7 +189,6 @@ save.to.text.file <- function(dir1, dir2) {
 #' @param second.lib.df second library data frame
 #' @noRd
 get.library.changes <- function (first.lib.df, second.lib.df){
-	cat("\nLIBRARY CHANGES: ")
 	# get the list of changes
 	lib.change.list <- find.library.changes(first.lib.df, second.lib.df)
 
@@ -187,26 +196,27 @@ get.library.changes <- function (first.lib.df, second.lib.df){
 	lib.difference.df <- as.data.frame(lib.change.list[1])
 	lib.dir2.df <- as.data.frame(lib.change.list[2])
 	lib.dir1.df <- as.data.frame(lib.change.list[3])
+  if (nrow(lib.difference.df) != 0){
+    cat("LIBRARY DIFFERENCES DETECTED:\n")
+    diffs.vector[1] <<- TRUE
+    print.data.frame(lib.difference.df, row.names = FALSE)
+  }
+	
+	# cat("\nLibrary version differences:\n")
+	# if(nrow(lib.difference.df) == 0){
+	# 	cat("No differences in library versions have been detected")
+	# }else{
+	# 	print.data.frame(lib.difference.df, row.names = FALSE)
+	# }
 
-	cat("\nLibrary version differences:\n")
-	if(nrow(lib.difference.df) == 0){
-		cat("No differences in library versions have been detected")
-	}else{
-		print.data.frame(lib.difference.df, row.names = FALSE)
-	}
-
-	cat("\nLibraries in dir2 but not in dir1:\n")
-	if(nrow(lib.dir2.df) == 0){
-		cat("No such libraries were found")
-	}else{
+	if(nrow(lib.dir2.df) != 0){
+	  cat("\nLibraries in dir2 but not in dir1:\n")
 		print.data.frame(lib.dir2.df, row.names = FALSE)
 	}
 
-	cat("\nLibraries in dir1 but not in dir2:")
-	if(nrow(lib.dir1.df) == 0){
-		cat("No such libraries were found")
-	}else{
-		print.data.frame(lib.dir1.df, row.names = FALSE)
+	if(nrow(lib.dir1.df) != 0){
+	  cat("\nLibraries in dir1 but not in dir2:")
+	  print.data.frame(lib.dir1.df, row.names = FALSE)
 	}
 }
 
@@ -262,7 +272,6 @@ find.library.changes <- function (first.lib.df, second.lib.df) {
 #' @param second.env.df second environment data frame 
 #' @noRd
 get.environment.changes <- function(first.env.df, second.env.df) {
-	cat("\nENVIRONMENT CHANGES: ")
 	env.change.list <- find.environment.changes(first.env.df, second.env.df)
 
 	# as.data.frame returns an empty data frame if the given data frame is null
@@ -270,18 +279,28 @@ get.environment.changes <- function(first.env.df, second.env.df) {
 	env.difference.df <- as.data.frame(env.change.list[1])
 	env.dir2.df <- as.data.frame(env.change.list[2])
 	env.dir1.df <- as.data.frame(env.change.list[3])
-
-	cat("Value differences: \n") 
-	# prints out the update 
-	if(nrow(env.difference.df) == 0){
-		cat("No differences have been detected")
-	}else{
-		for(i in 1:nrow(env.difference.df)){
-			cat("Attribute:", env.difference.df$label[i], "\n")
-			cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
-			cat("### dir2 value:", env.difference.df$dir2.value[i], "\n")
-		}
+	if(nrow(env.difference.df) != 0){
+	  cat("\nENVIRONMENT DIFFERENCES DETECTED: \n")
+	  diffs.vector[3] <<- TRUE
 	}
+	for(i in 1:nrow(env.difference.df)){
+	  cat("Attribute:", env.difference.df$label[i], "\n")
+	  cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
+	  cat("### dir2 value:", env.difference.df$dir2.value[i], "\n")
+	}
+
+	# cat("Value differences: \n") 
+	# # prints out the update 
+	# if(nrow(env.difference.df) == 0){
+	# 	cat("No differences have been detected")
+	# }else{
+	#   cat("\nENVIRONMENT DIFFERENCES DETECTED: ")
+	# 	for(i in 1:nrow(env.difference.df)){
+	# 		cat("Attribute:", env.difference.df$label[i], "\n")
+	# 		cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
+	# 		cat("### dir2 value:", env.difference.df$dir2.value[i], "\n")
+	# 	}
+	# }
 
 	# rare case: environment factors in dir2 but not in dir1,
 	# only prints out when found such factor
@@ -367,27 +386,37 @@ clean.environment.df <- function(env.df) {
 #' @param second.tool.df second tool data frame
 #' @noRd
 get.prov.tool.changes <- function (first.tool.df, second.tool.df) {
-	cat("\nPROVENANCE TOOL CHANGES: ")
 	tool.change.list <- find.prov.tool.changes(first.tool.df, second.tool.df)
 	# if the list returned is null, as.data.frame creates an empty data frame,
 	# so no need to handle null case here
 	tool.difference.df <- as.data.frame(tool.change.list[1])
 	dir2.tool.df <- as.data.frame(tool.change.list[2])
 	dir1.tool.df <- as.data.frame(tool.change.list[3])
-
-	cat("Tool differences: ")
-	# prints out the update 
-	if(nrow(tool.difference.df) == 0){
-		cat("No differences have been detected")
-	}else{
-		for(i in 1:nrow(tool.difference.df)){
-			cat("Name:", tool.difference.df$tool.name[i])
-			cat("### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
-				"; dir1 json version:", tool.difference.df$dir1.json.version[i])
-			cat("### dir2 tool version:", tool.difference.df$dir2.tool.version[i], 
-				"; dir2 json version:", tool.difference.df$dir2.json.version[i])
-		}
+  
+	if (nrow(tool.difference.df) != 0){
+	  cat("\nPROVENANCE TOOL DIFFERENCES DETECTED: \n")
+	  diffs.vector[4] <<- TRUE
+	  for(i in 1:nrow(tool.difference.df)){
+	    cat("Name:", tool.difference.df$tool.name[i])
+	    cat("### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
+	        "; dir1 json version:", tool.difference.df$dir1.json.version[i])
+	    cat("### dir2 tool version:", tool.difference.df$dir2.tool.version[i], 
+	        "; dir2 json version:", tool.difference.df$dir2.json.version[i])
+	  }
 	}
+	# cat("Tool differences: ")
+	# # prints out the update 
+	# if(nrow(tool.difference.df) == 0){
+	# 	cat("No differences have been detected")
+	# }else{
+	# 	for(i in 1:nrow(tool.difference.df)){
+	# 		cat("Name:", tool.difference.df$tool.name[i])
+	# 		cat("### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
+	# 			"; dir1 json version:", tool.difference.df$dir1.json.version[i])
+	# 		cat("### dir2 tool version:", tool.difference.df$dir2.tool.version[i], 
+	# 			"; dir2 json version:", tool.difference.df$dir2.json.version[i])
+	# 	}
+	# }
 
 	# case: tool in dir2 but not in dir1 (for example one used rdt, the other used rdtLite)
 	if(nrow(dir2.tool.df) != 0){
@@ -447,7 +476,6 @@ find.prov.tool.changes <- function (first.tool.df, second.tool.df) {
 #' @param dir2 path of second provenance directory 
 #' @noRd
 get.script.changes <- function(first.script.df, second.script.df, dir1, dir2) {
-	cat("\nSCRIPT CHANGES: ")
 
 	# check the existence of the 2 data frames
 	if(FALSE == check.df.existence("Script", first.script.df, second.script.df)){
@@ -460,6 +488,7 @@ get.script.changes <- function(first.script.df, second.script.df, dir1, dir2) {
 		cat("\nNA")
 		return()
 	}
+  cat("\nSCRIPT CHANGES: \n")
 
 	script.change.list <- find.script.changes(first.script.df, second.script.df, dir1, dir2)
 	main.script.change.result <- as.double(script.change.list[1])
@@ -514,8 +543,10 @@ get.main.script.change <- function(main.script.change.result, first.main.script.
 		}
 		else {
 			msg = c(msg, paste ("No change detected in the content of the main script", second.main.script.df$script))
+			diffs.vector[0] <<- FALSE
 		}	
 	}
+	
 		
 	msg = c(msg, paste("### dir1 main script", first.main.script.df$script, "was last modified at:", first.main.script.df$timestamp))
 	msg = c(msg, paste("### dir2 main script", second.main.script.df$script, "was last modified at:", second.main.script.df$timestamp))
@@ -779,7 +810,6 @@ get.input.files.changes <- function (input.df1, input.df2) {
 		return ("")
 	}
 
-	cat("\n\nINPUT FILE CHANGES:\n")
 
 	# process input files (not URL)
 	input.files.df1 <- input.df1[input.df1$type == "File", ]
@@ -787,7 +817,6 @@ get.input.files.changes <- function (input.df1, input.df2) {
 
 	empty <- FALSE
 	if(nrow(input.files.df1) == 0) {
-		cat("No input files were found in dir 1\n")
 		empty <- TRUE
 	}
 	else {
@@ -795,7 +824,6 @@ get.input.files.changes <- function (input.df1, input.df2) {
 	}
 	
 	if(nrow(input.files.df2) == 0) {
-		cat("No input files were found in dir 2\n")
 		empty <- TRUE
 	}
 	else {
@@ -803,6 +831,9 @@ get.input.files.changes <- function (input.df1, input.df2) {
 	}
 	
 	if(empty) return()
+	
+	cat("\n\nINPUT FILE CHANGES:\n")
+	diffs.vector[2] <<- TRUE
 
 	# if reached here, both data frames must have some input files
 	# compare files with same name
@@ -1131,7 +1162,8 @@ get.data.differences <- function(first.prov.info, second.prov.info){
 }
 
 compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scripts.2){
-  cat("ERROR DIFFERENCE DETECTED:\n")
+  cat("\nERROR DIFFERENCE DETECTED:\n")
+  diffs.vector[5] <<- TRUE
   if (nrow(error.report.1) >= nrow(error.report.2)){
     end <-  nrow(error.report.1)
     using.1 <- TRUE
@@ -1172,6 +1204,7 @@ compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scrip
 }
 compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.2){
   cat("\nDATA NODE DIFFERENCE DETECTED:\n")
+  diffs.vector[5] <<- TRUE
   
   if (nrow(data.report.1) >= nrow(data.report.2)){
     end <-  nrow(data.report.1)
@@ -1226,6 +1259,40 @@ compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.
   
   
   
+}
+
+get.summary <- function(){
+ cat("\nSUMMARY: Differences found in the")
+ if (isTRUE(diffs.vector[0])){
+   cat("\nscript(s)")
+ } 
+ if (isTRUE(diffs.vector[1])){
+   cat("\nlibraries")
+ } 
+ if (isTRUE(diffs.vector[2])){
+   cat("\ninput files")
+ }
+ if (isTRUE(diffs.vector[3])){
+   cat("\nenvironment")
+ } 
+ if (isTRUE(diffs.vector[4])){
+   cat("\nprovenance tools")
+ } 
+ if (isTRUE(diffs.vector[5])){
+   cat("\ndata and/or errors")
+ }
+ cat("\nFEEDBACK:\n")
+ if (isFALSE(diffs.vector[5])){
+   cat("No major differences in script behavior\n")
+ } else if (isTRUE(diffs.vector[0])){
+   cat("Differences are likely from script changes. Use the script line references in the data/error node output to identify specific changes.\n")
+ } else if (isTRUE(diffs.vector[3])){
+   cat("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n")
+ } else if (isTRUE(diffs.vector[1])){
+   cat("Differences are likely from library changes. Review how the library changes affected script lines referenced in the data/error node outputs.\n")
+ } else if (isTRUE(diffs.vector[4])){
+   cat("Differences are likely from prov tool changes.\n")
+ }
 }
   
 
