@@ -37,13 +37,6 @@
 #'   \item Contents and names of main and sourced scripts 
 #' }
 
-#SCRIPT - 0
-#LIBRARY - 1
-#INPUT FILES - 2
-#ENVIRONMENT - 3
-#PROV TOOL - 4
-#DATA - 5
-diffs.vector <<- c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)
 
 #' 
 #' @param dir1 path of first provenance directory
@@ -68,6 +61,13 @@ prov.explain <- function (dir1, dir2, testing = FALSE, save = FALSE){
     return(get.data.differences(first.prov.info, second.prov.info))
 #    get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
   }
+  #SCRIPT - 0
+  #LIBRARY - 1
+  #INPUT FILES - 2
+  #ENVIRONMENT - 3
+  #PROV TOOL - 4
+  #DATA - 5
+  diffs.vector <<- c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)
 
 	# detecting changes 
 	if(save == TRUE){
@@ -198,8 +198,8 @@ get.library.changes <- function (first.lib.df, second.lib.df){
 	lib.dir1.df <- as.data.frame(lib.change.list[3])
   if (nrow(lib.difference.df) != 0){
     cat("LIBRARY DIFFERENCES DETECTED:\n")
-    diffs.vector[1] <<- TRUE
     print.data.frame(lib.difference.df, row.names = FALSE)
+    diffs.vector[2] <<- TRUE
   }
 	
 	# cat("\nLibrary version differences:\n")
@@ -281,12 +281,12 @@ get.environment.changes <- function(first.env.df, second.env.df) {
 	env.dir1.df <- as.data.frame(env.change.list[3])
 	if(nrow(env.difference.df) != 0){
 	  cat("\nENVIRONMENT DIFFERENCES DETECTED: \n")
-	  diffs.vector[3] <<- TRUE
-	}
-	for(i in 1:nrow(env.difference.df)){
-	  cat("Attribute:", env.difference.df$label[i], "\n")
-	  cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
-	  cat("### dir2 value:", env.difference.df$dir2.value[i], "\n")
+	  diffs.vector[4] <<- TRUE
+	  for(i in 1:nrow(env.difference.df)){
+	    cat("Attribute:", env.difference.df$label[i], "\n")
+	    cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
+	    cat("### dir2 value:", env.difference.df$dir2.value[i], "\n")
+	  }
 	}
 
 	# cat("Value differences: \n") 
@@ -395,7 +395,7 @@ get.prov.tool.changes <- function (first.tool.df, second.tool.df) {
   
 	if (nrow(tool.difference.df) != 0){
 	  cat("\nPROVENANCE TOOL DIFFERENCES DETECTED: \n")
-	  diffs.vector[4] <<- TRUE
+	  diffs.vector[5] <<- TRUE
 	  for(i in 1:nrow(tool.difference.df)){
 	    cat("Name:", tool.difference.df$tool.name[i])
 	    cat("### dir1 tool version:", tool.difference.df$dir1.tool.version[i], 
@@ -543,7 +543,7 @@ get.main.script.change <- function(main.script.change.result, first.main.script.
 		}
 		else {
 			msg = c(msg, paste ("No change detected in the content of the main script", second.main.script.df$script))
-			diffs.vector[0] <<- FALSE
+			diffs.vector[1] <<- FALSE
 		}	
 	}
 	
@@ -833,7 +833,7 @@ get.input.files.changes <- function (input.df1, input.df2) {
 	if(empty) return()
 	
 	cat("\n\nINPUT FILE CHANGES:\n")
-	diffs.vector[2] <<- TRUE
+	diffs.vector[3] <<- TRUE
 
 	# if reached here, both data frames must have some input files
 	# compare files with same name
@@ -1163,7 +1163,7 @@ get.data.differences <- function(first.prov.info, second.prov.info){
 
 compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scripts.2){
   cat("\nERROR DIFFERENCE DETECTED:\n")
-  diffs.vector[5] <<- TRUE
+  diffs.vector[6] <<- TRUE
   if (nrow(error.report.1) >= nrow(error.report.2)){
     end <-  nrow(error.report.1)
     using.1 <- TRUE
@@ -1204,7 +1204,7 @@ compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scrip
 }
 compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.2){
   cat("\nDATA NODE DIFFERENCE DETECTED:\n")
-  diffs.vector[5] <<- TRUE
+  diffs.vector[6] <<- TRUE
   
   if (nrow(data.report.1) >= nrow(data.report.2)){
     end <-  nrow(data.report.1)
@@ -1262,37 +1262,42 @@ compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.
 }
 
 get.summary <- function(){
- cat("\nSUMMARY: Differences found in the")
- if (isTRUE(diffs.vector[0])){
-   cat("\nscript(s)")
- } 
- if (isTRUE(diffs.vector[1])){
-   cat("\nlibraries")
- } 
- if (isTRUE(diffs.vector[2])){
-   cat("\ninput files")
+ if (!any(diffs.vector)){
+   cat("\nSUMMARY: No differences found.")
+ } else {
+   cat("\nSUMMARY: Differences found in the")
+   if (isTRUE(diffs.vector[1])){
+     cat("\nscript(s)")
+   } 
+   if (isTRUE(diffs.vector[2])){
+     cat("\nlibraries")
+   } 
+   if (isTRUE(diffs.vector[3])){
+     cat("\ninput files")
+   }
+   if (isTRUE(diffs.vector[4])){
+     cat("\nenvironment")
+   } 
+   if (isTRUE(diffs.vector[5])){
+     cat("\nprovenance tools")
+   } 
+   if (isTRUE(diffs.vector[6])){
+     cat("\ndata and/or errors")
+   }
+   cat("\nFEEDBACK:\n")
+   if (isFALSE(diffs.vector[6])){
+     cat("No major differences in script behavior\n")
+   } else if (isTRUE(diffs.vector[1])){
+     cat("Differences are likely from script changes. Use the script line references in the data/error node output to identify specific changes.\n")
+   } else if (isTRUE(diffs.vector[4])){
+     cat("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n")
+   } else if (isTRUE(diffs.vector[2])){
+     cat("Differences are likely from library changes. Review how the library changes affected script lines referenced in the data/error node outputs.\n")
+   } else if (isTRUE(diffs.vector[5])){
+     cat("Differences are likely from prov tool changes.\n")
+   }
  }
- if (isTRUE(diffs.vector[3])){
-   cat("\nenvironment")
- } 
- if (isTRUE(diffs.vector[4])){
-   cat("\nprovenance tools")
- } 
- if (isTRUE(diffs.vector[5])){
-   cat("\ndata and/or errors")
- }
- cat("\nFEEDBACK:\n")
- if (isFALSE(diffs.vector[5])){
-   cat("No major differences in script behavior\n")
- } else if (isTRUE(diffs.vector[0])){
-   cat("Differences are likely from script changes. Use the script line references in the data/error node output to identify specific changes.\n")
- } else if (isTRUE(diffs.vector[3])){
-   cat("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n")
- } else if (isTRUE(diffs.vector[1])){
-   cat("Differences are likely from library changes. Review how the library changes affected script lines referenced in the data/error node outputs.\n")
- } else if (isTRUE(diffs.vector[4])){
-   cat("Differences are likely from prov tool changes.\n")
- }
+ 
 }
   
 
