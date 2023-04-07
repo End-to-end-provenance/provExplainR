@@ -164,6 +164,7 @@ detect.changes <- function (dir1, dir2, compare_errors){
 	get.environment.changes (provParseR::get.environment(first.prov.info), provParseR::get.environment(second.prov.info))
 	get.prov.tool.changes (provParseR::get.tool.info(first.prov.info), provParseR::get.tool.info(second.prov.info))
 	get.data.differences(first.prov.info, second.prov.info)
+	get.stdout.differences(first.prov.info, second.prov.info)
 	get.summary()
 	
 }
@@ -282,6 +283,22 @@ get.environment.changes <- function(first.env.df, second.env.df) {
 	if(nrow(env.difference.df) != 0){
 	  cat("\nENVIRONMENT DIFFERENCES DETECTED: \n")
 	  diffs.vector[4] <<- TRUE
+	  lang.diff.msg <<- ""
+	  if (any(env.difference.df$label == "language version")){
+	    msg <- ""
+	    lang.version.1 <- strsplit(env.difference.df[env.difference.df$label == "language version",2], " ")[[1]][3]
+	    lang.version.2 <- strsplit(env.difference.df[env.difference.df$label == "language version",3], " ")[[1]][3]
+	    if ((startsWith(lang.version.1, "4") && startsWith(lang.version.2, "3")) || 
+	        (startsWith(lang.version.1, "3") && startsWith(lang.version.2, "4"))) {
+	      msg <- paste("\n R 3.x and 4.x have critical differences that affect script behavior. See https://stat.ethz.ch/pipermail/r-announce/2020/000653.html for more information.\n")
+	    }
+	    if ((startsWith(lang.version.1, "4.2") && !startsWith(lang.version.2, "4.2")) || 
+	               (!startsWith(lang.version.1, "4.2") && startsWith(lang.version.2, "4.2"))) {
+	      msg <- paste(msg,"R 4.2.x has critical differences from previous version that affect script behavior. See https://stat.ethz.ch/pipermail/r-announce/2022/000683.html for more information.")
+	    }
+	    lang.diff.msg <<- paste("Different R versions detected:", msg)
+	    
+	  }
 	  for(i in 1:nrow(env.difference.df)){
 	    cat("Attribute:", env.difference.df$label[i], "\n")
 	    cat("### dir1 value:", env.difference.df$dir1.value[i], "\n")
@@ -832,7 +849,7 @@ get.input.files.changes <- function (input.df1, input.df2) {
 	
 	if(empty) return()
 	
-	cat("\n\nINPUT FILE CHANGES:\n")
+	cat("\nINPUT FILE CHANGES:\n")
 	diffs.vector[3] <<- TRUE
 
 	# if reached here, both data frames must have some input files
@@ -868,8 +885,8 @@ compare.input.files.same.name <- function (same.name.files.df) {
 		if (nrow(different.hash.df) > 0) {
 			for(i in 1:nrow(different.hash.df)) {
 				row <- different.hash.df[i, ]
-				cat("\nThe content of the input file", row$name, "has changed")
-				cat("### dir1", row$name, "was last modified at:", row$timestamp.x)
+				cat("The content of the input file", row$name, "has changed\n")
+				cat("### dir1", row$name, "was last modified at:", row$timestamp.x, "\n")
 				cat("### dir2", row$name, "was last modified at:", row$timestamp.y)
 			}
 		}
@@ -1181,10 +1198,19 @@ compare.error.nodes <- function(error.report.1, error.report.2, scripts.1, scrip
         sl.1 <- error.report.1[i, "startLine"]
         sl.2 <- error.report.2[i, "startLine"]
         if (using.1){
-          cat(paste("Line ", sl.1, " of file in Directory 1:", script.name.1, " reported ",
-                    msg.1, " while in Directory 2:", script.name.2, " reported "))
+          if(startsWith(msg.1, "Error")){
+            cat(paste("Line", sl.1, "of file in Directory 1:", script.name.1, "reported",
+                      msg.1, "while in Directory 2:", script.name.2, "reported"))
+          } else {
+            cat(paste("Line", sl.1, "of file in Directory 1:", script.name.1, "reported Warning",
+                      msg.1, "while in Directory 2:", script.name.2, " reported"))
+          }
           if (!is.na(msg.2)){
-            cat(paste(msg.2))
+            if(startsWith(msg.2, "Error")){
+              cat(paste(msg.2))
+            } else {
+              cat(paste(" Warning", msg.2))
+            }
           } else {
             cat(paste("nothing."))
           }
@@ -1256,9 +1282,77 @@ compare.data.nodes <- function(data.report.1, data.report.2, scripts.1, scripts.
       break
     }
   }
+}
+
+get.stdout.differences <- function(first.prov.info, second.prov.info){
+  environment.1 <- provParseR::get.environment(first.prov.info)
+  environment.2 <- provParseR::get.environment(second.prov.info)
+  script.path.1 <- environment.1[environment.1$label == "script", ]$value
+  script.path.2 <- environment.1[environment.1$label == "script", ]$value
+  script.file.1 <- sub(".*/", "", script.path.1)
+  script.file.2 <- sub(".*/", "", script.path.2)
   
+  if (script.file.1 == "console.R" || script.file.2 == "console.R") {
+    return("")# can't compare stdout if from console
+  }
+  stdout.nodes.1 <- provParseR::get.stdout.nodes(first.prov.info)
+  stdout.nodes.2 <- provParseR::get.stdout.nodes(second.prov.info)
+  if (!identical(stdout.nodes.1, stdout.nodes.2)) {
+    cat("\nSTDOUT NODE DIFFERENCE DETECTED:\n")
+    diffs.vector[6] <<- TRUE
+    compare.stdout.nodes(first.prov.info, second.prov.info, stdout.nodes.1, stdout.nodes.2)
+  }
+}
+
+compare.stdout.nodes <- function(first.prov.info, second.prov.info, stdout.nodes.1, stdout.nodes.2) {
+  proc.data.edges.1 <- provParseR::get.proc.data(first.prov.info)
+  proc.nodes.1 <- provParseR::get.proc.nodes(first.prov.info)
   
+  proc.data.edges.2 <- provParseR::get.proc.data(second.prov.info)
+  proc.nodes.2 <- provParseR::get.proc.nodes(second.prov.info)
   
+  stdout.report.1 <- merge(stdout.nodes.1, proc.data.edges.1, by.x="id", by.y="entity")
+  stdout.report.1 <- merge(stdout.report.1, proc.nodes.1, by.x="activity", by.y="id")
+  stdout.report.1 <- select(stdout.report.1, c("activity", "id", "value", 
+                                               "id.y", "name", "type", "scriptNum",
+                                               "startLine", "startCol", "endLine", "endCol"))
+  
+  stdout.report.2 <- merge(stdout.nodes.2, proc.data.edges.2, by.x="id", by.y="entity")
+  stdout.report.2 <- merge(stdout.report.2, proc.nodes.2, by.x="activity", by.y="id")
+  stdout.report.2 <- select(stdout.report.2, c("activity", "id", "value", 
+                                               "id.y", "name", "type", "scriptNum",
+                                               "startLine", "startCol", "endLine", "endCol"))
+  
+  scripts.1 <- provParseR::get.scripts(first.prov.info)
+  scripts.1 <- sub(".*/", "", scripts.1$script)
+  scripts.2 <- provParseR::get.scripts(second.prov.info)
+  scripts.2 <- sub(".*/", "", scripts.2$script)
+  
+  if (nrow(stdout.report.1) >= nrow(stdout.report.2)){
+    end <-  nrow(stdout.report.1)
+    using.1 <- TRUE
+  } else {
+    end = nrow(stdout.report.2)
+    using.1 <- FALSE
+  }
+  for (i in 1:end){
+    script.name.1 <- scripts.1[stdout.report.1[i, "scriptNum"]]
+    script.name.2 <- scripts.2[stdout.report.2[i, "scriptNum"]]
+    
+    if (!identical(stdout.report.1[i,], stdout.report.2[i,])){
+      if (using.1 && is.na(stdout.report.2[i, "id"])){
+        cat("Stdout node", stdoutreport.1[i, "id"], "of value", stdout.report.1[i, "value"],"in Directory 1 File", script.name.1, 
+            "does not exist in Directory 2\n")
+      } else if (!using.1 && is.na(stdout.report.1[i, "id"])){
+        cat("Stdout node", stdout.report.2[i, "id"], "of value", stdout.report.2[i, "value"],"in Directory 2 File", script.name.2, 
+            "does not exist in Directory 1\n")
+      }else if (!identical(stdout.report.1[i, "value"], stdout.report.2[i, "value"])){
+        cat("Stdout Node Value Difference Detected\n")
+        cat(paste(stdout.report.1[i, "id"] ,"Value: ", stdout.report.1[i, "value"], "\n",
+                  stdout.report.2[i, "id"],"Value: ", stdout.report.2[i, "value"], "\n", sep = ""))
+      }
+    }
+  }
 }
 
 get.summary <- function(){
@@ -1282,15 +1376,19 @@ get.summary <- function(){
      cat("\nprovenance tools")
    } 
    if (isTRUE(diffs.vector[6])){
-     cat("\ndata and/or errors")
+     cat("\ndata and/or errors and/or stdout")
    }
    cat("\nFEEDBACK:\n")
-   if (isFALSE(diffs.vector[6])){
+   if (!any(diffs.vector)){
+     cat(" No differences found in computing environment, script, input data, or results.\n")
+   } else if (isFALSE(diffs.vector[6])){
      cat("No major differences in script behavior\n")
    } else if (isTRUE(diffs.vector[1])){
      cat("Differences are likely from script changes. Use the script line references in the data/error node output to identify specific changes.\n")
+   } else if (isTRUE(diffs.vector[3])){
+     cat("Differences are likely from file input changes. Review what inputs are being passed into the scripts.\n")
    } else if (isTRUE(diffs.vector[4])){
-     cat("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n")
+     cat(paste("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n", lang.diff.msg, "\n", sep = ""))
    } else if (isTRUE(diffs.vector[2])){
      cat("Differences are likely from library changes. Review how the library changes affected script lines referenced in the data/error node outputs.\n")
    } else if (isTRUE(diffs.vector[5])){
