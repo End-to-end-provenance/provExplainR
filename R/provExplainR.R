@@ -61,13 +61,13 @@ prov.explain <- function (dir1, dir2, testing = FALSE, save = FALSE){
     return(get.data.differences(first.prov.info, second.prov.info))
 #    get.error.differences(provParseR::get.error.nodes(first.prov.info), provParseR::get.error.nodes(second.prov.info))
   }
-  #SCRIPT - 0
-  #LIBRARY - 1
-  #INPUT FILES - 2
-  #ENVIRONMENT - 3
-  #PROV TOOL - 4
-  #DATA - 5
-  diffs.vector <<- c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)
+  #SCRIPT - 1
+  #LIBRARY - 2
+  #INPUT FILES - 3
+  #ENVIRONMENT - 4
+  #PROV TOOL - 5ip
+  #DATA - 6
+  diffs.vector <<- c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
 
 	# detecting changes 
 	if(save == TRUE){
@@ -549,8 +549,10 @@ get.main.script.change <- function(main.script.change.result, first.main.script.
 		# case: if script was not renamed, prints out the name of the script along with the message
 		if(FALSE == renamed){
 			msg = c(msg, paste ("The content of the main script", second.main.script.df$script, "has changed"))
+			diffs.vector[1] <<- TRUE
 		}else{
 			msg = c(msg, "The content of the main script has changed")
+			diffs.vector[1] <<- TRUE
 		}
 		msg = c(msg, "Run prov.diff.script to see the changes.")
 	}else{ # case: the content is not changed (value 2 or 3)
@@ -560,7 +562,6 @@ get.main.script.change <- function(main.script.change.result, first.main.script.
 		}
 		else {
 			msg = c(msg, paste ("No change detected in the content of the main script", second.main.script.df$script))
-			diffs.vector[1] <<- FALSE
 		}	
 	}
 	
@@ -689,6 +690,7 @@ get.same.name.sourced.scripts <- function(same.name.script.df) {
 		# extract rows with different hash values
 		modified.script.df <- dplyr::filter(same.name.script.df, same.name.script.df$dir1.hashValue != same.name.script.df$dir2.hashValue)
 		if(nrow(modified.script.df) != 0){
+		  diffs.vector[1] <<- TRUE
 			for(i in 1:nrow(modified.script.df)){
 				msg = c(msg, paste("Sourced script", modified.script.df$script[i], "has changed"))
 				msg = c(msg, "Run prov.diff.script to see the changes.")
@@ -725,6 +727,7 @@ get.renamed.sourced.scripts <- function(renamed.script.df) {
 	if(nrow(renamed.script.df) != 0) {
 
 		for(i in 1:nrow(renamed.script.df)) {
+		  diffs.vector[1] <<- TRUE
 			changes <- c(changes, "Sourced script has same content but different names:")
 			changes <- c(changes, paste("### dir1 sourced script name:", renamed.script.df$dir1.script[i]))
 			changes <- c(changes, paste("### dir2 sourced script name:", renamed.script.df$dir2.script[i]))
@@ -832,25 +835,39 @@ get.input.files.changes <- function (input.df1, input.df2) {
 	input.files.df1 <- input.df1[input.df1$type == "File", ]
 	input.files.df2 <- input.df2[input.df2$type == "File", ]
 
-	empty <- FALSE
+	empty.1 <- FALSE
+	empty.2 <- FALSE
 	if(nrow(input.files.df1) == 0) {
-		empty <- TRUE
+		empty.1 <- TRUE
 	}
 	else {
 		get.input.file.changes(input.files.df1, "1")
 	}
 	
 	if(nrow(input.files.df2) == 0) {
-		empty <- TRUE
+		empty.2 <- TRUE
 	}
 	else {
 		get.input.file.changes(input.files.df2, "2")
 	}
+	data.changes <<- FALSE
+	data.not.passed <<- FALSE
+	if(empty.1 && empty.2) return()
+	if(empty.1 && !empty.2){
+	  diffs.vector[3] <<- TRUE
+	  cat("\nINPUT FILE CHANGES:\n")
+	  cat("Directory 2 uses input files while Directory 1 does not.\n")
+	  data.not.passed <<- TRUE
+	  return()
+	}
+	if (!empty.1 && empty.2){
+	  diffs.vector[3] <<- TRUE
+	  cat("\nINPUT FILE CHANGES:\n")
+	  cat("Directory 1 uses input files while Directory 2 does not.\n")
+	  data.not.passed <<- TRUE
+	  return()
+	}
 	
-	if(empty) return()
-	
-	cat("\nINPUT FILE CHANGES:\n")
-	diffs.vector[3] <<- TRUE
 
 	# if reached here, both data frames must have some input files
 	# compare files with same name
@@ -872,17 +889,22 @@ get.input.files.changes <- function (input.df1, input.df2) {
 #' @noRd
 compare.input.files.same.name <- function (same.name.files.df) {
 	if(FALSE == is.null(same.name.files.df) && nrow(same.name.files.df) != 0) {
-		# case: same hash value, thus no change detected
+		# case: same hash value, thus no change detected, no report needed
 		same.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x == same.name.files.df$hash.y)
 		if (nrow(same.hash.df) > 0) {
-			for(i in 1:nrow(same.hash.df)) {
-				cat("No change detected in the input file", same.hash.df$name[i])
-			}
+			# for(i in 1:nrow(same.hash.df)) {
+			# 	cat("No change detected in the input file", same.hash.df$name[i])
+			# }
 		}
 
 		# case: different hash value, thus content changed
 		different.hash.df <- dplyr::filter(same.name.files.df, same.name.files.df$hash.x != same.name.files.df$hash.y)
 		if (nrow(different.hash.df) > 0) {
+		  if(!diffs.vector[3]){
+		    cat("\nINPUT FILE CHANGES:\n")
+		    diffs.vector[3] <<- TRUE
+		    data.changes <<- FALSE
+		  }
 			for(i in 1:nrow(different.hash.df)) {
 				row <- different.hash.df[i, ]
 				cat("The content of the input file", row$name, "has changed\n")
@@ -904,17 +926,21 @@ compare.input.files.same.name <- function (same.name.files.df) {
 #' @param different.name.files.df2 data frame of input files whose names are exclusive to dir2
 #' @noRd
 compare.input.files.different.name <- function(different.name.files.df1, different.name.files.df2) {
-	# case: files with same content but different name
+	# case: files with same content but different name, no report needed
 	same.hash.df <- dplyr::inner_join(different.name.files.df1, different.name.files.df2, by = "hash")
 	if(FALSE == is.null(same.hash.df) && nrow(same.hash.df) != 0) {
-		for(i in 1:nrow(same.hash.df)) {
-			cat("Content of two input files", same.hash.df$name.x[i], "(dir1) and", same.hash.df$name.y[i], "(dir 2) is the same")
-		}
+		# for(i in 1:nrow(same.hash.df)) {
+		# 	cat("Content of two input files", same.hash.df$name.x[i], "(dir1) and", same.hash.df$name.y[i], "(dir 2) is the same")
+		# }
 	}
 
 	# case: files with different hash values and names (dir1)
 	exclusive.files1 <- dplyr::anti_join(different.name.files.df1, different.name.files.df2, by = "hash")
 	if(FALSE == is.null(exclusive.files1) && nrow(exclusive.files1) != 0) {
+	  if(!diffs.vector[3]){
+	    cat("\nINPUT FILE CHANGES:\n")
+	    diffs.vector[3] <<- TRUE
+	  }
 		cat("\nInput files in dir1 but not in dir2:")
 		for(i in 1:nrow(exclusive.files1)) {
 			cat("### ", exclusive.files1$name[i], ", which was last modified at ", exclusive.files1$timestamp[i], sep = "")
@@ -924,6 +950,10 @@ compare.input.files.different.name <- function(different.name.files.df1, differe
 	# case: files with different hash values and names (dir2)
 	exclusive.files2 <- dplyr::anti_join(different.name.files.df2, different.name.files.df1, by = "hash")
 	if(FALSE == is.null(exclusive.files2) && nrow(exclusive.files2) != 0) {
+	  if(!diffs.vector[3]){
+	    cat("\nINPUT FILE CHANGES:\n")
+	    diffs.vector[3] <<- TRUE
+	  }
 		cat("\nInput files in dir2 but not in dir1:")
 		for(i in 1:nrow(exclusive.files2)) {
 			cat("### ", exclusive.files2$name[i], ", which was last modified at ", exclusive.files2$timestamp[i], sep = "")
@@ -1385,9 +1415,11 @@ get.summary <- function(){
      cat("No major differences in script behavior\n")
    } else if (isTRUE(diffs.vector[1])){
      cat("Differences are likely from script changes. Use the script line references in the data/error node output to identify specific changes.\n")
-   } else if (isTRUE(diffs.vector[3])){
-     cat("Differences are likely from file input changes. Review what inputs are being passed into the scripts.\n")
-   } else if (isTRUE(diffs.vector[4])){
+   } else if (isTRUE(diffs.vector[3]) && isTRUE(data.changes)){
+     cat("Differences are likely from content changes within file inputs. Review what inputs are being passed into the scripts and how data has changed.\n")
+   } else if (isTRUE(diffs.vector[3] && isTRUE(data.not.passed))){
+     cat("Differences are likely from not using different numbers of input files. Review what inputs are failing to be used by scripts and make sure input files are in the correct location. \n")
+   }else if (isTRUE(diffs.vector[4])){
      cat(paste("Differences are likely from environment changes. Review how the computing environment changes affected script lines referenced in the data/error node output.\n", lang.diff.msg, "\n", sep = ""))
    } else if (isTRUE(diffs.vector[2])){
      cat("Differences are likely from library changes. Review how the library changes affected script lines referenced in the data/error node outputs.\n")
