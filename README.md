@@ -96,5 +96,5 @@ Here is an example of what the prov.diff.script output looks like. The script fr
 ![Image description](prov.example.png)
 
 
-##Sean Devel Changes
+## Sean Devel Changes
 provExplainR now also compares data nodes, exception nodes and standard output nodes. In addition, it only reports changes and does not include information about the aspects of provenance that have not occurred. Finally, it provides a summary of which changes were detected and creates feedback for the user regarding how to resolve possible script behavior differences by addressing these environmental changes. 
