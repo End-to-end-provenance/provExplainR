@@ -825,7 +825,6 @@ get.copied.script.path <- function(prov.dir, origin.script.df) {
 #' @param input.df2 data frame of input files in second data provenance collection
 #' @noRd
 get.input.files.changes <- function (input.df1, input.df2) {
-# QUESTION: are inputs in sourced scripts recorded?
 	if(FALSE == check.df.existence("Input file", input.df1, input.df2)) {
 		return ("")
 	}
